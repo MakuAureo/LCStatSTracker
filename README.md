@@ -55,6 +55,7 @@ Just HTTP request it and wait until the day is over to get your stats.
     "BottomLine":760,
     "BottomLineTrue":1428,
     "ValueSold":0,
+    "NewQuota":0,
     "AppSpawned":false,
     "IndoorFog":false,
     "TakeOffTime":"8:30 PM"
@@ -65,6 +66,7 @@ Just HTTP request it and wait until the day is over to get your stats.
     {
         "76561198980273231":
         {
+            "Name":"AureoHatsune",
             "Alive":true,
             "Disconnected":false,
             "TimeOfDeath":"",
