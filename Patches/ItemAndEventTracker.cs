@@ -8,6 +8,7 @@ using HarmonyLib;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace StatsTracker.Patches;
@@ -26,6 +27,7 @@ internal class ItemAndEventTracker
   private static HashSet<NetworkObjectReference> objectsNaturallySpawnedThisDay = new();
   private static Dictionary<NetworkObjectReference, int> valueFromGiftSpawner = new();
   private static HashSet<Vector3> butlerPopPositionsToTrack = new();
+  private static List<Util.MissingItemInfo> missedItemsParentedToDungeon = new();
 
   [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc))]
   [HarmonyPrefix]
@@ -42,6 +44,7 @@ internal class ItemAndEventTracker
     objectsNaturallySpawnedThisDay.Clear();
     valueFromGiftSpawner.Clear();
     butlerPopPositionsToTrack.Clear();
+    missedItemsParentedToDungeon.Clear();
   }
 
   [HarmonyPatch]
@@ -167,6 +170,29 @@ internal class ItemAndEventTracker
     }
   }
 
+  [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ShipHasLeft))]
+  [HarmonyPostfix]
+  private static void TrackMissedInLevelScene(StartOfRound __instance)
+  {
+    var cruiser = VehicleControllerType != null
+      ? Object.FindAnyObjectByType(VehicleControllerType)
+      : null;
+
+    Scene currLevelScene = SceneManager.GetSceneAt(1);
+    GrabbableObject[] rawList = Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None);
+    List<GrabbableObject> missedInScene = new(rawList);
+    missedInScene.RemoveAll(obj => 
+        obj.gameObject.scene != currLevelScene ||
+        !obj.itemProperties.isScrap ||
+        obj.isInShipRoom ||
+        cruiser != null && obj.transform.parent != null && obj.transform.parent.gameObject.GetComponent(VehicleControllerType) == cruiser && Traverse.Create(cruiser).Field(nameof(VehicleController.magnetedToShip)).GetValue<bool>());
+
+    missedItemsParentedToDungeon = missedInScene
+      .ConvertAll<Util.MissingItemInfo>
+      (obj => new(obj.gameObject.GetComponentInChildren<ScanNodeProperties>() == null ? obj.itemProperties.name : obj.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, obj.scrapValue, obj.transform.position, obj.scrapPersistedThroughRounds))
+      .ToList();
+  }
+
   [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound))]
   [HarmonyPrefix]
   private static void TrackMissedItems(RoundManager __instance)
@@ -176,16 +202,18 @@ internal class ItemAndEventTracker
       : null;
 
     GrabbableObject[] rawList = Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None);
-    List<GrabbableObject> missedObjs = new(rawList);
+    List<GrabbableObject> missedObjs = rawList.ToList();
     missedObjs.RemoveAll(obj =>
         !obj.itemProperties.isScrap ||
         obj.isInShipRoom ||
         cruiser != null && obj.transform.parent != null && obj.transform.parent.gameObject.GetComponent(VehicleControllerType) == cruiser && Traverse.Create(cruiser).Field(nameof(VehicleController.magnetedToShip)).GetValue<bool>());
 
     StatsTracker.DayStats?.MissedItems = missedObjs
-      .Select<GrabbableObject, Util.MissingItemInfo>
+      .ConvertAll<Util.MissingItemInfo>
       (obj => new(obj.gameObject.GetComponentInChildren<ScanNodeProperties>() == null ? obj.itemProperties.name : obj.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, obj.scrapValue, obj.transform.position, obj.scrapPersistedThroughRounds))
       .ToList();
+
+    StatsTracker.DayStats?.MissedItems.AddRange(missedItemsParentedToDungeon);
   }
 
   [HarmonyPatch(typeof(LungProp), nameof(LungProp.Start))]
