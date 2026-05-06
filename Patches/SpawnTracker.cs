@@ -43,14 +43,22 @@ internal class SpawnTracker
       return (NutcrackerEnemyAIType != null);
     }
     private static MethodBase TargetMethod() => AccessTools.Method(NutcrackerEnemyAIType, nameof(NutcrackerEnemyAI.InitializeNutcrackerValuesClientRpc));
-    private static void Prefix(object __instance) 
+    private static void Prefix(object __instance, NetworkObjectReference gunObject) 
     {
       NutcrackerEnemyAI instance = (NutcrackerEnemyAI)(__instance);
 
       if ((GameNetworkManager.Instance.gameVersionNum > 72 && instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
         return;
 
-      StatsTracker.DayStats?.BottomLineTrue += instance.gun.scrapValue;
+      gunObject.TryGet(out NetworkObject gunNetObj);
+      ShotgunItem gun = gunNetObj.GetComponent<ShotgunItem>();
+      if (gun == null)
+      {
+        StatsTracker.Logger.LogWarning("Unable to retrieve ShotgunItem from the spawned Nutcracker");
+        return;
+      }
+
+      StatsTracker.DayStats?.BottomLineTrue += gun.scrapValue;
     }
   }
 
