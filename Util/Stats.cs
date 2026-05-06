@@ -6,13 +6,15 @@ namespace StatsTracker.Util;
 
 internal class PlayerStats
 {
+  public string Name;
   public bool Alive;
   public bool Disconnected;
   public string TimeOfDeath;
   public string CauseOfDeath;
 
-  public PlayerStats()
+  public PlayerStats(string name)
   {
+    Name = name;
     Alive = true;
     Disconnected = false;
     TimeOfDeath = "";
@@ -164,7 +166,7 @@ internal class Stats
   
   public List<MissingItemInfo> MissedItems;
 
-  public Stats(int seed, string moonName, string weather, ulong[] allPlayerIDs)
+  public Stats(int seed, string moonName, string weather, GameNetcodeStuff.PlayerControllerB[] allPlayers)
   {
     MoonInfo = new(moonName, weather);
     BeeInfo = new();
@@ -188,7 +190,7 @@ internal class Stats
     InfestationType = "";
     MeteorShowerTime = "";
 
-    foreach (ulong playerID in allPlayerIDs)
-      Players[playerID] = new();
+    foreach (GameNetcodeStuff.PlayerControllerB player in allPlayers)
+      Players[player.playerSteamId] = new(player.playerUsername);
   }
 }

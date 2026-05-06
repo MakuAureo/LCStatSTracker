@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Unity.Netcode;
@@ -20,7 +19,7 @@ internal class ServerEvents
 
     StatsTracker.DayStats = new(__instance.randomMapSeed, __instance.currentLevel.PlanetName,
         __instance.currentLevel.currentWeather == LevelWeatherType.None ? "Mild" : __instance.currentLevel.currentWeather.ToString(),
-        new List<GameNetcodeStuff.PlayerControllerB>(new ArraySegment<GameNetcodeStuff.PlayerControllerB>(__instance.allPlayerScripts, 0, __instance.connectedPlayersAmount + 1)).ConvertAll(pcb => pcb.playerSteamId).ToArray());
+        new ArraySegment<GameNetcodeStuff.PlayerControllerB>(__instance.allPlayerScripts, 0, __instance.connectedPlayersAmount + 1).ToArray());
   }
 
   [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.PassTimeToNextDay))]
