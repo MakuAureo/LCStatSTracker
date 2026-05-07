@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyName>OreoM.StatsTracker</AssemblyName>
     <Product>StatsTracker</Product>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <PropertyGroup>
