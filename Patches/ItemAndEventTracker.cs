@@ -8,8 +8,6 @@ using HarmonyLib;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
-using UnityEngine.SceneManagement;
-using Object = UnityEngine.Object;
 
 namespace StatsTracker.Patches;
 
@@ -18,6 +16,7 @@ internal class ItemAndEventTracker
 {
   private static readonly Type? GiftBoxItemType = AccessTools.TypeByName(nameof(GiftBoxItem));
   private static readonly Type? VehicleControllerType = AccessTools.TypeByName(nameof(VehicleController));
+  private static readonly FieldInfo? DeactivatedField = AccessTools.Field(typeof(GrabbableObject), nameof(GrabbableObject.deactivated));
 
   private static HashSet<NetworkObjectReference> knivesSpawnedThisDay = new();
   private static HashSet<NetworkObjectReference> shotgunsSpawnedThisDay = new();
@@ -170,50 +169,18 @@ internal class ItemAndEventTracker
     }
   }
 
-  [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ShipHasLeft))]
+  [HarmonyPatch(typeof(NetworkBehaviour), nameof(NetworkBehaviour.OnNetworkDespawn))]
   [HarmonyPostfix]
-  private static void TrackMissedInLevelScene(StartOfRound __instance)
+  private static void TrackMissedItems(NetworkBehaviour __instance)
   {
-    var cruiser = VehicleControllerType != null
-      ? Object.FindAnyObjectByType(VehicleControllerType)
-      : null;
+    if (__instance is not GrabbableObject || StartOfRound.Instance.inShipPhase)
+      return;
 
-    Scene currLevelScene = SceneManager.GetSceneAt(1);
-    GrabbableObject[] rawList = Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None);
-    List<GrabbableObject> missedInScene = new(rawList);
-    missedInScene.RemoveAll(obj => 
-        obj.gameObject.scene != currLevelScene ||
-        !obj.itemProperties.isScrap ||
-        obj.isInShipRoom ||
-        cruiser != null && obj.transform.parent != null && obj.transform.parent.gameObject.GetComponent(VehicleControllerType) == cruiser && Traverse.Create(cruiser).Field(nameof(VehicleController.magnetedToShip)).GetValue<bool>());
+    GrabbableObject gObject = (GrabbableObject)__instance;
+    if (!gObject.itemProperties.isScrap || gObject is RagdollGrabbableObject || (DeactivatedField != null && (bool)DeactivatedField.GetValue(gObject)))
+      return;
 
-    missedItemsParentedToDungeon = missedInScene
-      .ConvertAll<Util.MissingItemInfo>
-      (obj => new(obj.gameObject.GetComponentInChildren<ScanNodeProperties>() == null ? obj.itemProperties.name : obj.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, obj.scrapValue, obj.transform.position, obj.scrapPersistedThroughRounds))
-      .ToList();
-  }
-
-  [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound))]
-  [HarmonyPrefix]
-  private static void TrackMissedItems(RoundManager __instance)
-  {
-    var cruiser = VehicleControllerType != null
-      ? Object.FindAnyObjectByType(VehicleControllerType)
-      : null;
-
-    GrabbableObject[] rawList = Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None);
-    List<GrabbableObject> missedObjs = rawList.ToList();
-    missedObjs.RemoveAll(obj =>
-        !obj.itemProperties.isScrap ||
-        obj.isInShipRoom ||
-        cruiser != null && obj.transform.parent != null && obj.transform.parent.gameObject.GetComponent(VehicleControllerType) == cruiser && Traverse.Create(cruiser).Field(nameof(VehicleController.magnetedToShip)).GetValue<bool>());
-
-    StatsTracker.DayStats?.MissedItems = missedObjs
-      .ConvertAll<Util.MissingItemInfo>
-      (obj => new(obj.gameObject.GetComponentInChildren<ScanNodeProperties>() == null ? obj.itemProperties.name : obj.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, obj.scrapValue, obj.transform.position, obj.scrapPersistedThroughRounds))
-      .ToList();
-
-    StatsTracker.DayStats?.MissedItems.AddRange(missedItemsParentedToDungeon);
+    StatsTracker.DayStats?.MissedItems.Add(new(gObject.gameObject.GetComponentInChildren<ScanNodeProperties>() == null ? gObject.itemProperties.name : gObject.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText, gObject.scrapValue, gObject.transform.position, gObject.scrapPersistedThroughRounds));
   }
 
   [HarmonyPatch(typeof(LungProp), nameof(LungProp.Start))]
@@ -260,9 +227,12 @@ internal class ItemAndEventTracker
   private static class TrackTrueValueFromGiftBox
   {
     private static bool Prepare() => GiftBoxItemType != null;
-    private static MethodBase TargetMethod() => AccessTools.Method(GiftBoxItemType, nameof(GiftBoxItem.InitializeAfterPositioning));
+    private static MethodBase TargetMethod() => AccessTools.Method(typeof(GrabbableObject), nameof(GrabbableObject.Start));
     private static void Postfix(object __instance)
     { 
+      if (!(GiftBoxItemType!.IsInstanceOfType(__instance)))
+        return;
+
       GiftBoxItem instance = (GiftBoxItem)__instance;     
       StatsTracker.DayStats?.BottomLineTrue += instance.objectInPresentValue - instance.scrapValue;
     }
