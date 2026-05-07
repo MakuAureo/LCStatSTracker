@@ -46,8 +46,8 @@ internal class HQoLTracker
     }
   }
 
-  [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound))]
-  [HarmonyPostfix]
+  [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ShipHasLeft))]
+  [HarmonyPrefix]
   private static void DeregisterOnChangeAfterTakingOffCompanyTypeMoon(RoundManager __instance)
   {
     if (Object.FindAnyObjectByType<DepositItemsDesk>() == null)
