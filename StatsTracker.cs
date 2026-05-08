@@ -23,7 +23,7 @@ public class StatsTracker : BaseUnityPlugin
     {"Level1Flow", "Facility"},
     {"Level2Flow", "Mansion"},
     {"Level1FlowExtraLarge", "UnusedFacility"},
-    {"Level1Flow3Exits", "Facility3Exit"},
+    {"Level1Flow3Exits", "Facility"},
     {"Level3Flow", "Mineshaft"} 
   };
 
@@ -96,6 +96,7 @@ public class StatsTracker : BaseUnityPlugin
 			num2 %= 12;
 		}
 		int num3 = num % 60;
-		return $"{num2:00}:{num3:00}".TrimStart('0') + amPM;
+    string time = $"{num2:00}:{num3:00}".TrimStart('0') + amPM;
+    return (time == "6:00 AM") ? "7:40 AM" : time;
   }
 }

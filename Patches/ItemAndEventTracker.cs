@@ -305,7 +305,7 @@ internal class ItemAndEventTracker
 
   [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetItemInElevator))]
   [HarmonyPrefix]
-  private static void TrackItemWhenDropped(PlayerControllerB __instance, bool droppedInShipRoom, GrabbableObject gObject)
+  private static void TrackItemWhenMoved(PlayerControllerB __instance, bool droppedInShipRoom, GrabbableObject gObject)
   {
     if (!gObject.IsSpawned || StartOfRound.Instance.inShipPhase || gObject.isInShipRoom == droppedInShipRoom || gObject.scrapPersistedThroughRounds)
       return;
