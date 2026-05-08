@@ -121,11 +121,13 @@ internal class SpawnInfo
 {
   public string Enemy;
   public string SpawnTime;
+  public string TimeOfDeath;
 
   public SpawnInfo(EnemyType EnemyType, string Time)
   {
     this.Enemy = EnemyType.enemyName;
     this.SpawnTime = Time;
+    this.TimeOfDeath = "";
   }
 }
 

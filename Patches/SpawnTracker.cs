@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using Unity.Netcode;
@@ -9,17 +10,59 @@ namespace StatsTracker.Patches;
 internal class SpawnTracker
 {
   private const int knifeValue = 35;
+
+  private static Dictionary<NetworkObjectReference, int> EnemyToSpawnInfoIndex = new();
+
+  [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc))]
+  [HarmonyPrefix]
+  private static void ResetTrackerWhenStartingNewDay(RoundManager __instance)
+  {
+    if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
+      return;
+
+    EnemyToSpawnInfoIndex.Clear();
+  }
   
   [HarmonyPatch(typeof(EnemyAI), nameof(EnemyAI.Start))]
   [HarmonyPostfix]
   private static void TrackSpawn(EnemyAI __instance)
   {
     if (__instance.enemyType.isDaytimeEnemy)
+    {
+      EnemyToSpawnInfoIndex[__instance.NetworkObject] = StatsTracker.DayStats!.DayTimeSpawns.Count;
       StatsTracker.DayStats?.DayTimeSpawns.Add(new(__instance.enemyType, StatsTracker.GetCurrentTimeString()));
+    }
     else if (__instance.enemyType.isOutsideEnemy)
+    {
+      EnemyToSpawnInfoIndex[__instance.NetworkObject] = StatsTracker.DayStats!.NightTimeSpawns.Count;
       StatsTracker.DayStats?.NightTimeSpawns.Add(new(__instance.enemyType, StatsTracker.GetCurrentTimeString()));
+    }
     else
+    {
+      EnemyToSpawnInfoIndex[__instance.NetworkObject] = StatsTracker.DayStats!.IndoorSpawns.Count;
       StatsTracker.DayStats?.IndoorSpawns.Add(new(__instance.enemyType, StatsTracker.GetCurrentTimeString()));
+    }
+  }
+
+  [HarmonyPatch(typeof(EnemyAI), nameof(EnemyAI.KillEnemy))]
+  [HarmonyPostfix]
+  private static void TrackDeath(EnemyAI __instance)
+  {
+    if (__instance.enemyType.isDaytimeEnemy)
+    {
+      EnemyToSpawnInfoIndex.TryGetValue(__instance.NetworkObject, out int index);
+      StatsTracker.DayStats?.DayTimeSpawns[index].DeathTime = StatsTracker.GetCurrentTimeString();
+    }
+    else if (__instance.enemyType.isOutsideEnemy)
+    {
+      EnemyToSpawnInfoIndex.TryGetValue(__instance.NetworkObject, out int index);
+      StatsTracker.DayStats?.NightTimeSpawns[index].DeathTime = StatsTracker.GetCurrentTimeString();
+    }
+    else
+    {
+      EnemyToSpawnInfoIndex.TryGetValue(__instance.NetworkObject, out int index);
+      StatsTracker.DayStats?.IndoorSpawns[index].DeathTime = StatsTracker.GetCurrentTimeString();
+    }
   }
 
   [HarmonyPatch(typeof(RedLocustBees), nameof(RedLocustBees.SpawnHiveClientRpc))]
