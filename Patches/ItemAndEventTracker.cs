@@ -233,9 +233,15 @@ internal class ItemAndEventTracker
       if (!(GiftBoxItemType!.IsInstanceOfType(__instance)))
         return;
 
-      GiftBoxItem instance = (GiftBoxItem)__instance;     
-      StatsTracker.DayStats?.BottomLineTrue += instance.objectInPresentValue - instance.scrapValue;
+      //There's a frame wait for client to get the correct values
+      StartOfRound.Instance.StartCoroutine(WaitUntilGiftValuesHaveBeenSetAndUpdateBottomLine((GiftBoxItem)__instance));
     }
+  }
+
+  private static IEnumerator WaitUntilGiftValuesHaveBeenSetAndUpdateBottomLine(GiftBoxItem instance)
+  {
+    yield return new WaitUntil(() => instance.objectInPresentValue != 0 && instance.scrapValue != 0);
+    StatsTracker.DayStats?.BottomLineTrue += instance.objectInPresentValue - instance.scrapValue;
   }
 
   [HarmonyPatch]
