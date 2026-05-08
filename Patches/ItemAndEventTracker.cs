@@ -25,7 +25,6 @@ internal class ItemAndEventTracker
   private static HashSet<NetworkObjectReference> appSpawnedThisDay = new();
   private static HashSet<NetworkObjectReference> objectsNaturallySpawnedThisDay = new();
   private static Dictionary<NetworkObjectReference, int> valueFromGiftSpawner = new();
-  private static HashSet<Vector3> butlerPopPositionsToTrack = new();
   private static List<Util.MissingItemInfo> missedItemsParentedToDungeon = new();
 
   [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc))]
@@ -42,7 +41,6 @@ internal class ItemAndEventTracker
     eggsSpawnedThisDay.Clear();
     objectsNaturallySpawnedThisDay.Clear();
     valueFromGiftSpawner.Clear();
-    butlerPopPositionsToTrack.Clear();
     missedItemsParentedToDungeon.Clear();
   }
 
@@ -266,24 +264,6 @@ internal class ItemAndEventTracker
   }
 
   [HarmonyPatch]
-  private static class TrackButlerPopPosition
-  {
-    private static Type? ButlerEnemyAIType = null;
-    private static bool Prepare()
-    {
-      ButlerEnemyAIType = AccessTools.TypeByName(nameof(ButlerEnemyAI));
-      return ButlerEnemyAIType != null;
-    }
-    private static MethodBase TargetMethod() => AccessTools.Method(ButlerEnemyAIType, nameof(ButlerEnemyAI.KillEnemy));
-    private static void Prefix(object __instance)
-    {
-      ButlerEnemyAI instance = (ButlerEnemyAI)__instance;
-
-      butlerPopPositionsToTrack.Add(instance.transform.position);
-    }
-  }
-
-  [HarmonyPatch]
   private static class TrackKnife
   {
     private static Type? KnifeItemInfo = null;
@@ -298,14 +278,7 @@ internal class ItemAndEventTracker
       if (!(KnifeItemInfo!.IsInstanceOfType(__instance)))
         return;
 
-      KnifeItem knife = (KnifeItem)__instance;
-
-      Vector3 pos = butlerPopPositionsToTrack.FirstOrDefault(p => Vector3.Distance(p + Vector3.up * 0.5f, knife.transform.position) < 0.1f);
-      if (pos != Vector3.zero)
-      {
-        knivesSpawnedThisDay.Add(__instance.NetworkObject);
-        butlerPopPositionsToTrack.Remove(pos);
-      }
+      knivesSpawnedThisDay.Add(__instance.NetworkObject);
     }
   }
 
