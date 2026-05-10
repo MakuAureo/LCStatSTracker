@@ -63,6 +63,20 @@ internal class BeeInfo
   }
 }
 
+internal class GiftBoxInfo
+{
+  public int GiftValue;
+  public int ScrapValue;
+  public bool Collected;
+
+  public GiftBoxInfo(int GiftValue, int ScrapValue)
+  {
+    this.GiftValue = GiftValue;
+    this.ScrapValue = ScrapValue;
+    this.Collected = false;
+  }
+}
+
 internal class MissingItemInfo
 {
   public int Value;
@@ -165,7 +179,8 @@ internal class Stats
   public List<SpawnInfo> IndoorSpawns;
   public List<SpawnInfo> DayTimeSpawns;
   public List<SpawnInfo> NightTimeSpawns;
-  
+
+  public List<GiftBoxInfo> GiftBoxes;
   public List<MissingItemInfo> MissedItems;
 
   public Stats(int seed, string moonName, string weather, GameNetcodeStuff.PlayerControllerB[] allPlayers)
@@ -173,11 +188,6 @@ internal class Stats
     MoonInfo = new(moonName, weather);
     BeeInfo = new();
     BirdInfo = new();
-    MissedItems = new();
-    IndoorSpawns = new();
-    DayTimeSpawns = new();
-    NightTimeSpawns = new();
-    Players = new();
     Seed = seed;
     ShotgunsCollected = 0;
     KnivesCollected = 0;
@@ -187,10 +197,18 @@ internal class Stats
     BottomLineTrue = 0;
     ValueSold = 0;
     NewQuota = 0;
+    AppSpawned = false;
+    IndoorFog = false;
     TakeOffTime = "";
     SIDType = "";
     InfestationType = "";
     MeteorShowerTime = "";
+    Players = new();
+    IndoorSpawns = new();
+    DayTimeSpawns = new();
+    NightTimeSpawns = new();
+    GiftBoxes = new();
+    MissedItems = new();
 
     foreach (GameNetcodeStuff.PlayerControllerB player in allPlayers)
       Players[player.playerSteamId] = new(player.playerUsername);

@@ -24,6 +24,7 @@ internal class ItemAndEventTracker
   private static HashSet<NetworkObjectReference> appSpawnedThisDay = new();
   private static HashSet<NetworkObjectReference> objectsNaturallySpawnedThisDay = new();
   private static Dictionary<NetworkObjectReference, int> valueFromGiftSpawner = new();
+  private static Dictionary<NetworkObjectReference, int> indexFromGiftBox = new();
   private static List<Util.MissingItemInfo> missedItemsParentedToDungeon = new();
 
   [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc))]
@@ -238,6 +239,9 @@ internal class ItemAndEventTracker
   private static IEnumerator WaitUntilGiftValuesHaveBeenSetAndUpdateBottomLine(GiftBoxItem instance)
   {
     yield return new WaitUntil(() => instance.objectInPresentValue != 0 && instance.scrapValue != 0);
+
+    indexFromGiftBox[instance.NetworkObject] = StatsTracker.DayStats!.GiftBoxes.Count;
+    StatsTracker.DayStats?.GiftBoxes.Add(new(instance.objectInPresentValue, instance.scrapValue));
     StatsTracker.DayStats?.BottomLineTrue += instance.objectInPresentValue - instance.scrapValue;
   }
 
@@ -292,11 +296,17 @@ internal class ItemAndEventTracker
     {
       if (objectsNaturallySpawnedThisDay.Contains(gObject.NetworkObject))
       {
+        bool isGift = GiftBoxItemType?.IsInstanceOfType(gObject) == true;
         StatsTracker.DayStats?.CollectedNoExtra += gObject.scrapValue;
-        StatsTracker.DayStats?.CollectedTotal += 
-          GiftBoxItemType?.IsInstanceOfType(gObject) == true ?
-          Traverse.Create(gObject).Property(nameof(GiftBoxItem.objectInPresentValue)).GetValue<int>()
-          : gObject.scrapValue;
+        if (isGift)
+        {
+          StatsTracker.DayStats?.CollectedTotal += Traverse.Create(gObject).Field(nameof(GiftBoxItem.objectInPresentValue)).GetValue<int>();
+          StatsTracker.DayStats?.GiftBoxes[indexFromGiftBox.GetValueOrDefault(gObject.NetworkObject)].Collected = true;
+        }
+        else
+        {
+          StatsTracker.DayStats?.CollectedTotal += gObject.scrapValue;
+        }
       }
       else if (valueFromGiftSpawner.TryGetValue(gObject.NetworkObject, out int parentGiftValue))
       {
@@ -322,11 +332,17 @@ internal class ItemAndEventTracker
     {
       if (objectsNaturallySpawnedThisDay.Contains(gObject.NetworkObject))
       {
+        bool isGift = GiftBoxItemType?.IsInstanceOfType(gObject) == true;
         StatsTracker.DayStats?.CollectedNoExtra -= gObject.scrapValue;
-        StatsTracker.DayStats?.CollectedTotal -= 
-          GiftBoxItemType?.IsInstanceOfType(gObject) == true ?
-          Traverse.Create(gObject).Property(nameof(GiftBoxItem.objectInPresentValue)).GetValue<int>()
-          : gObject.scrapValue;
+        if (isGift)
+        {
+          StatsTracker.DayStats?.CollectedTotal -= Traverse.Create(gObject).Field(nameof(GiftBoxItem.objectInPresentValue)).GetValue<int>();
+          StatsTracker.DayStats?.GiftBoxes[indexFromGiftBox.GetValueOrDefault(gObject.NetworkObject)].Collected = false;
+        }
+        else
+        {
+          StatsTracker.DayStats?.CollectedTotal -= gObject.scrapValue;
+        }
       }
       else if (valueFromGiftSpawner.TryGetValue(gObject.NetworkObject, out int parentGiftValue))
       {
