@@ -109,12 +109,11 @@ internal class ItemAndEventTracker
   public static void CountApp(LungProp __instance)
   {
     appSpawnedThisDay.Add(__instance.NetworkObject); 
-    StatsTracker.DayStats?.BottomLineTrue += __instance.scrapValue;
   }
 
   public static void TrackSpawnedItems(NetworkBehaviour __instance)
   {
-    if (__instance is not GrabbableObject || StartOfRound.Instance.inShipPhase)
+    if (__instance is not GrabbableObject || !StatsTracker.dayHasStarted)
       return;
 
     GrabbableObject gObject = (GrabbableObject)__instance;
@@ -127,16 +126,15 @@ internal class ItemAndEventTracker
 
   private static IEnumerator WaitUntilItemValueHasBeenSetAndUpdateBottomLine(GrabbableObject instance)
   {
-    StatsTracker.Logger.LogInfo("starting item corr");
     yield return new WaitUntil(() => instance.scrapValue != 0);
 
-    StatsTracker.Logger.LogInfo($"{instance.scrapValue}");
-    StatsTracker.DayStats?.BottomLineTrue += instance.scrapValue;
+    if (StatsTracker.GiftBoxItemType == null || !StatsTracker.GiftBoxItemType.IsInstanceOfType(instance))
+      StatsTracker.DayStats?.BottomLineTrue += instance.scrapValue;
   }
 
   public static void TrackMissedItems(NetworkBehaviour __instance)
   {
-    if (__instance is not GrabbableObject || StartOfRound.Instance.inShipPhase)
+    if (__instance is not GrabbableObject || !StatsTracker.dayHasStarted)
       return;
 
     GrabbableObject gObject = (GrabbableObject)__instance;
@@ -153,15 +151,27 @@ internal class ItemAndEventTracker
     {
       if (!gObj.scrapPersistedThroughRounds && gObj.itemProperties.isScrap && !(StatsTracker.DeactivatedField != null && (bool)StatsTracker.DeactivatedField.GetValue(gObj)) && !gObj.itemUsedUp && gObj.isInShipRoom)
       {
-        StatsTracker.DayStats?.CollectedTotal += gObj.scrapValue;
+        StatsTracker.DayStats?.CollectedTotal += 
+          StatsTracker.GiftBoxItemType?.IsInstanceOfType(gObj) == true ?
+          Traverse.Create(gObj).Field("objectInPresentValue").GetValue<int>() :
+          gObj.scrapValue;
+
         if (objectsNaturallySpawnedThisDay.Contains(gObj.NetworkObject))
           StatsTracker.DayStats?.CollectedNoExtra += gObj.scrapValue;
-        /*
-        else if (gObj.itemProperties.name == "RedLocustHive")
+        else if (valueFromGiftSpawner.TryGetValue(gObj.NetworkObject, out int originalGitfValue))
+          StatsTracker.DayStats?.CollectedNoExtra += originalGitfValue;
+
+        if (gObj.itemProperties.name == "RedLocustHive")
+          StatsTracker.DayStats?.BeeInfo.AddToCollected(gObj.scrapValue);
         else if (StatsTracker.EggItemType?.IsInstanceOfType(gObj) == true)
+          StatsTracker.DayStats?.EggInfo.AddToCollected(gObj.scrapValue);
         else if (StatsTracker.ShotgunItemType?.IsInstanceOfType(gObj) == true)
+          StatsTracker.DayStats?.ShotgunInfo.AddToCollected(gObj.scrapValue);
         else if (StatsTracker.KnifeItemType?.IsInstanceOfType(gObj) == true)
-        */
+          StatsTracker.DayStats?.KnifeInfo.AddToCollected(gObj.scrapValue);
+
+        if (indexFromGiftBox.TryGetValue(gObj.NetworkObject, out int index))
+          StatsTracker.DayStats?.GiftBoxes[index].Collected = true;
       }
     }
   }
@@ -181,7 +191,7 @@ internal class ItemAndEventTracker
 
     indexFromGiftBox[instance.NetworkObject] = StatsTracker.DayStats!.GiftBoxes.Count;
     StatsTracker.DayStats?.GiftBoxes.Add(new(instance.objectInPresentValue, instance.scrapValue));
-    StatsTracker.DayStats?.BottomLineTrue += instance.objectInPresentValue - instance.scrapValue;
+    StatsTracker.DayStats?.BottomLineTrue += instance.objectInPresentValue;
   }
 
   public static void AddNewlySpawnedGiftItemToItemTracker(GiftBoxItem __instance, NetworkObjectReference netObjectRef)
@@ -189,20 +199,22 @@ internal class ItemAndEventTracker
     if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
 
-    if (StartOfRound.Instance.inShipPhase)
+    if (!StatsTracker.dayHasStarted || __instance.scrapPersistedThroughRounds)
       return;
 
     // Using StartOfRound to make sure the coroutine doesn't get interrupted early if the gift instance is destroyed somehow
-    StartOfRound.Instance.StartCoroutine(WaitForGiftItemToFullySpawnBeforeTracking(netObjectRef, __instance.scrapValue));
+    StartOfRound.Instance.StartCoroutine(WaitForGiftItemToFullySpawnBeforeTracking(netObjectRef, __instance));
   }
 
-  private static IEnumerator WaitForGiftItemToFullySpawnBeforeTracking(NetworkObjectReference netObjRef, int giftScrapValue)
+  private static IEnumerator WaitForGiftItemToFullySpawnBeforeTracking(NetworkObjectReference netObjRef, GiftBoxItem instance)
   {
     NetworkObject netObject = null!;
+
+    WaitForSeconds waitTime = new WaitForSeconds(0.03f);
     float startTime = Time.realtimeSinceStartup;
     while (Time.realtimeSinceStartup - startTime < 8f && !netObjRef.TryGet(out netObject))
     {
-      yield return new WaitForSeconds(0.03f);
+      yield return waitTime;
     }
     if (netObject == null)
     {
@@ -210,10 +222,9 @@ internal class ItemAndEventTracker
       yield break;
     }
 
-    // Make sure the items were already set to Elevator before tracking (this isn't guaranteed to wait for long enough, but like yk)
-    yield return new WaitForSeconds(0.3f);
-
-    valueFromGiftSpawner[netObjRef] = giftScrapValue;
+    valueFromGiftSpawner[netObjRef] = instance.scrapValue;
+    indexFromGiftBox[instance.NetworkObject] = StatsTracker.DayStats!.GiftBoxes.Count;
+    StatsTracker.DayStats?.BottomLineTrue -= instance.objectInPresentValue;
   }
 
   public static void TrackHive(RedLocustBees __instance, int hiveScrapValue)
@@ -228,6 +239,11 @@ internal class ItemAndEventTracker
   public static void TrackKnifeBeforePopping(ButlerEnemyAI __instance)
   {
     StatsTracker.DayStats?.BottomLineTrue += knifeValue;
+  }
+
+  public static void TrackButlerPopAndRemoveFakeValue(ButlerEnemyAI __instance)
+  {
+    StatsTracker.DayStats?.BottomLineTrue -= knifeValue;
   }
 
   public static void TrackEggs(GiantKiwiAI __instance,  int[] eggScrapValues) 

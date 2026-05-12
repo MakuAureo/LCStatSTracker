@@ -20,6 +20,7 @@ public class StatsTracker : BaseUnityPlugin
   internal new static ManualLogSource Logger { get; private set; } = null!;
   internal static Harmony? Harmony { get; set; }
 
+  internal static bool dayHasStarted = false;
   internal static Util.Stats? DayStats;
   internal static Util.HttpSSE LocalServer = new();
   internal static Dictionary<string, string> VanillaInteriorNames = new Dictionary<string,string>
@@ -31,6 +32,10 @@ public class StatsTracker : BaseUnityPlugin
     {"Level3Flow", "Mineshaft"} 
   };
 
+  public static readonly Type? EggItemType = AccessTools.TypeByName(nameof(KiwiBabyItem));
+  public static readonly Type? KnifeItemType = AccessTools.TypeByName(nameof(KnifeItem));
+  public static readonly Type? ShotgunItemType = AccessTools.TypeByName(nameof(ShotgunItem));
+  public static readonly Type? GiftBoxItemType = AccessTools.TypeByName(nameof(GiftBoxItem));
   public static readonly FieldInfo? DeactivatedField = AccessTools.Field(typeof(GrabbableObject), nameof(GrabbableObject.deactivated));
 
   private void Awake()
@@ -62,8 +67,9 @@ public class StatsTracker : BaseUnityPlugin
       Harmony.Patch(AccessTools.Method(SpikeRoofTrapType, nameof(SpikeRoofTrap.Start)), postfix: new HarmonyMethod(typeof(Patches.HazardTracker), nameof(Patches.HazardTracker.CountSpiketrap)));
 
     //ItemAndEvent
+    Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.ResetTrackerWhenStartingNewDay)));
+
     MethodInfo RoundManagerSyncScrapValuesClientRpc = AccessTools.Method(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc));
-    Harmony.Patch(RoundManagerSyncScrapValuesClientRpc, prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.ResetTrackerWhenStartingNewDay)));
     Harmony.Patch(RoundManagerSyncScrapValuesClientRpc, prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackDungeonInfo)));
     Harmony.Patch(RoundManagerSyncScrapValuesClientRpc, prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackSID)));
 
@@ -85,7 +91,6 @@ public class StatsTracker : BaseUnityPlugin
     Harmony.Patch(AccessTools.Method(typeof(NetworkBehaviour), nameof(NetworkBehaviour.OnNetworkDespawn)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackMissedItems)));
     Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackCollectedItems)));
   
-    Type? GiftBoxItemType = AccessTools.TypeByName(nameof(GiftBoxItem));
     if (GiftBoxItemType != null)
     {
       Harmony.Patch(AccessTools.Method(typeof(GrabbableObject), nameof(GrabbableObject.Start)), postfix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackTrueValueFromGiftBox)));
@@ -94,11 +99,12 @@ public class StatsTracker : BaseUnityPlugin
 
     Harmony.Patch(AccessTools.Method(typeof(RedLocustBees), nameof(RedLocustBees.SpawnHiveClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackHive)));
 
-    Type? NutcrackerEnemyAIType = AccessTools.TypeByName(nameof(NutcrackerEnemyAI));
-
     Type? ButlerEnemyAIType = AccessTools.TypeByName(nameof(ButlerEnemyAI));
     if (ButlerEnemyAIType != null)
+    {
       Harmony.Patch(AccessTools.Method(ButlerEnemyAIType, nameof(ButlerEnemyAI.Start)), postfix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackKnifeBeforePopping)));
+      Harmony.Patch(AccessTools.Method(ButlerEnemyAIType, nameof(ButlerEnemyAI.KillEnemy)), postfix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackButlerPopAndRemoveFakeValue)));
+    }
 
     Type? GiantKiwiAIType = AccessTools.TypeByName(nameof(GiantKiwiAI));
     if (GiantKiwiAIType != null)
@@ -118,7 +124,7 @@ public class StatsTracker : BaseUnityPlugin
     //Spawn
     Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), prefix: new HarmonyMethod(typeof(Patches.SpawnTracker), nameof(Patches.SpawnTracker.ResetTrackerWhenStartingNewDay)));
     Harmony.Patch(AccessTools.Method(typeof(EnemyAI), nameof(EnemyAI.Start)), postfix: new HarmonyMethod(typeof(Patches.SpawnTracker), nameof(Patches.SpawnTracker.TrackSpawn)));
-    Harmony.Patch(AccessTools.Method(typeof(EnemyAI), nameof(EnemyAI.KillEnemy)), postfix: new HarmonyMethod(typeof(Patches.SpawnTracker), nameof(Patches.SpawnTracker.TrackDeath)));
+    Harmony.Patch(AccessTools.Method(typeof(EnemyAI), nameof(EnemyAI.KillEnemy)), prefix: new HarmonyMethod(typeof(Patches.SpawnTracker), nameof(Patches.SpawnTracker.TrackDeath)));
 
     //HQoL
     if (Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.72") || Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.73"))

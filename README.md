@@ -14,48 +14,48 @@ Just HTTP request it and wait until the day is over to get your stats.
 ```
 {
   "MoonInfo": {
-    "Name": "56 Vow",
-    "Weather": "Mild"
+    "Name": "68 Artifice",
+    "Weather": "Eclipsed"
   },
   "DungeonInfo": {
-    "ItemCount": 19,
+    "ItemCount": 34,
     "Interior": "Mineshaft"
   },
   "HazardInfo": {
-    "TurretCount": 0,
-    "LandmineCount": 0,
+    "TurretCount": 1,
+    "LandmineCount": 2,
     "SpiketrapCount": 0
   },
   "BeeInfo": {
-    "Total": [
-      57
-    ],
-    "Collected": [
-      57
-    ]
+    "Total": [],
+    "Collected": []
   },
   "EggInfo": {
     "Total": [],
     "Collected": []
   },
   "KnifeInfo": {
-    "Total": [],
-    "Collected": []
+    "Total": [
+      35
+    ],
+    "Collected": [
+      35
+    ]
   },
   "ShotgunInfo": {
     "Total": [],
     "Collected": []
   },
-  "Seed": 60286767,
-  "CollectedNoExtra": 0,
-  "CollectedTotal": 57,
-  "BottomLine": 863,
-  "BottomLineTrue": 917,
+  "Seed": 10183014,
+  "CollectedNoExtra": 926,
+  "CollectedTotal": 1016,
+  "BottomLine": 2043,
+  "BottomLineTrue": 2133,
   "ValueSold": 0,
   "NewQuota": 0,
   "AppSpawned": false,
   "IndoorFog": false,
-  "TakeOffTime": "9:00 AM",
+  "TakeOffTime": "11:57 PM",
   "SIDType": "",
   "InfestationType": "",
   "MeteorShowerTime": "",
@@ -68,46 +68,93 @@ Just HTTP request it and wait until the day is over to get your stats.
       "CauseOfDeath": ""
     }
   },
-  "IndoorSpawns": [],
+  "IndoorSpawns": [
+    {
+      "Enemy": "Butler",
+      "SpawnTime": "9:16 AM",
+      "TimeOfDeath": "10:12 PM"
+    },
+    {
+      "Enemy": "Crawler",
+      "SpawnTime": "9:50 AM",
+      "TimeOfDeath": ""
+    },
+    {
+      "Enemy": "Blob",
+      "SpawnTime": "9:56 AM",
+      "TimeOfDeath": ""
+    },
+    {
+      "Enemy": "Jester",
+      "SpawnTime": "10:41 AM",
+      "TimeOfDeath": ""
+    },
+    {
+      "Enemy": "Blob",
+      "SpawnTime": "11:12 AM",
+      "TimeOfDeath": ""
+    },
+    {
+      "Enemy": "Spring",
+      "SpawnTime": "1:28 PM",
+      "TimeOfDeath": ""
+    }
+  ],
   "DayTimeSpawns": [
     {
-      "Enemy": "Red Locust Bees",
+      "Enemy": "Docile Locust Bees",
+      "SpawnTime": "7:40 AM",
+      "TimeOfDeath": "7:50 PM"
+    }
+  ],
+  "NightTimeSpawns": [
+    {
+      "Enemy": "ForestGiant",
+      "SpawnTime": "7:40 AM",
+      "TimeOfDeath": "10:21 AM"
+    },
+    {
+      "Enemy": "Earth Leviathan",
       "SpawnTime": "7:40 AM",
       "TimeOfDeath": ""
     },
     {
-      "Enemy": "Manticoil",
-      "SpawnTime": "9:00 AM",
+      "Enemy": "RadMech",
+      "SpawnTime": "7:40 AM",
       "TimeOfDeath": ""
     },
+    {
+      "Enemy": "MouthDog",
+      "SpawnTime": "9:56 AM",
+      "TimeOfDeath": "4:47 PM"
+    }
     ...
   ],
-  "NightTimeSpawns": [],
   "GiftBoxes": [
     {
-      "GiftValue":21,
-      "ScrapValue":18,
-      "Collected":false
+      "GiftValue": 69,
+      "ScrapValue": 14,
+      "Collected": true
     }
   ],
   "MissedItems": [
     {
-      "Value": 60,
-      "ItemType": "Control pad",
+      "Value": 96,
+      "ItemType": "Rubber ducky",
       "DespawnPosition": [
-        -18.2,
-        -212.6,
-        102.1
+        -25.6,
+        -219.6,
+        8.1
       ],
       "CollectedOnPreviousDay": false
     },
     {
-      "Value": 59,
-      "ItemType": "Brass bell",
+      "Value": 74,
+      "ItemType": "Wedding ring",
       "DespawnPosition": [
-        -57.5,
-        -219,
-        105.3
+        -86.6,
+        -219.4,
+        88.9
       ],
       "CollectedOnPreviousDay": false
     },

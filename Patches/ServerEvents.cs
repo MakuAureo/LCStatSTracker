@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using HarmonyLib;
 using Newtonsoft.Json;
 using Unity.Netcode;
 using UnityEngine;
@@ -17,6 +16,8 @@ internal class ServerEvents
     StatsTracker.DayStats = new(__instance.randomMapSeed, __instance.currentLevel.PlanetName,
         __instance.currentLevel.currentWeather == LevelWeatherType.None ? "Mild" : __instance.currentLevel.currentWeather.ToString(),
         new ArraySegment<GameNetcodeStuff.PlayerControllerB>(__instance.allPlayerScripts, 0, __instance.connectedPlayersAmount + 1).ToArray());
+
+    StatsTracker.dayHasStarted = true;
   }
 
   public static void PublishDayStats(StartOfRound __instance)
@@ -25,6 +26,8 @@ internal class ServerEvents
       __instance.StartCoroutine(PublishDayStatsAfterQuotaRoll(TimeOfDay.Instance.profitQuota));
     else
       StatsTracker.LocalServer.PublishStats(JsonConvert.SerializeObject(StatsTracker.DayStats));
+
+    StatsTracker.dayHasStarted = false;
   }
 
   private static IEnumerator PublishDayStatsAfterQuotaRoll(int prevQuota)
