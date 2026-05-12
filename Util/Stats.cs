@@ -36,18 +36,18 @@ internal class PlayerStats
 
 internal class SpecialItemInfo
 {
-  public List<int> Total;
+  public List<int> Available;
   public List<int> Collected;
 
   public SpecialItemInfo()
   {
-    this.Total = new();
+    this.Available = new();
     this.Collected = new();
   }
 
-  public void AddToTotal(int value)
+  public void AddToAvailable(int value)
   {
-    Total.Add(value);
+    Available.Add(value);
   }
 
   public void AddToCollected(int value)

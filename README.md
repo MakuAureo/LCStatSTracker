@@ -27,15 +27,15 @@ Just HTTP request it and wait until the day is over to get your stats.
     "SpiketrapCount": 0
   },
   "BeeInfo": {
-    "Total": [],
+    "Available": [],
     "Collected": []
   },
   "EggInfo": {
-    "Total": [],
+    "Available": [],
     "Collected": []
   },
   "KnifeInfo": {
-    "Total": [
+    "Available": [
       35
     ],
     "Collected": [
@@ -43,7 +43,7 @@ Just HTTP request it and wait until the day is over to get your stats.
     ]
   },
   "ShotgunInfo": {
-    "Total": [],
+    "Available": [],
     "Collected": []
   },
   "Seed": 10183014,

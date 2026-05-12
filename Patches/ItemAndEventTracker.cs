@@ -232,7 +232,7 @@ internal class ItemAndEventTracker
     if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
 
-    StatsTracker.DayStats?.BeeInfo.AddToTotal(hiveScrapValue);
+    StatsTracker.DayStats?.BeeInfo.AddToAvailable(hiveScrapValue);
     StatsTracker.DayStats?.BottomLineTrue += hiveScrapValue;
   }
 
@@ -253,7 +253,7 @@ internal class ItemAndEventTracker
 
     foreach (int eggValue in eggScrapValues)
     {
-      StatsTracker.DayStats?.EggInfo.AddToTotal(eggValue);
+      StatsTracker.DayStats?.EggInfo.AddToAvailable(eggValue);
       StatsTracker.DayStats?.BottomLineTrue += eggValue;
     }
   }
