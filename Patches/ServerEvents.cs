@@ -7,12 +7,9 @@ using UnityEngine;
 
 namespace StatsTracker.Patches;
 
-[HarmonyPatch]
 internal class ServerEvents 
 {
-  [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ResetPlayersLoadedValueClientRpc))]
-  [HarmonyPrefix]
-  private static void StartTrackingNewday(StartOfRound __instance)
+  public static void StartTrackingNewday(StartOfRound __instance)
   {
     if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
@@ -22,9 +19,7 @@ internal class ServerEvents
         new ArraySegment<GameNetcodeStuff.PlayerControllerB>(__instance.allPlayerScripts, 0, __instance.connectedPlayersAmount + 1).ToArray());
   }
 
-  [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.PassTimeToNextDay))]
-  [HarmonyPostfix]
-  private static void PublishDayStats(StartOfRound __instance)
+  public static void PublishDayStats(StartOfRound __instance)
   {
     if (TimeOfDay.Instance.profitQuota - TimeOfDay.Instance.quotaFulfilled <= 0)
       __instance.StartCoroutine(PublishDayStatsAfterQuotaRoll(TimeOfDay.Instance.profitQuota));

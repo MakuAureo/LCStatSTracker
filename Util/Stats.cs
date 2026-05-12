@@ -34,32 +34,25 @@ internal class PlayerStats
   }
 }
 
-internal class KiwiBirdInfo
+internal class SpecialItemInfo
 {
-  public List<int> EggValues;
+  public List<int> Total;
+  public List<int> Collected;
 
-  public KiwiBirdInfo()
+  public SpecialItemInfo()
   {
-    this.EggValues = new();
+    this.Total = new();
+    this.Collected = new();
   }
 
-  public void AddEggValue(int[] values) {
-    EggValues.AddRange(values);
-  }
-}
-
-internal class BeeInfo
-{
-  public List<int> Values;
-
-  public BeeInfo()
+  public void AddToTotal(int value)
   {
-    this.Values = new();
+    Total.Add(value);
   }
 
-  public void AddBeeValue(int value)
+  public void AddToCollected(int value)
   {
-    Values.Add(value);;
+    Collected.Add(value);
   }
 }
 
@@ -151,14 +144,13 @@ internal class Stats
   public DungeonInfo? DungeonInfo;
   public HazardInfo? HazardInfo;
 
-  public BeeInfo BeeInfo;
-  public KiwiBirdInfo BirdInfo;
+  public SpecialItemInfo BeeInfo;
+  public SpecialItemInfo EggInfo;
+  public SpecialItemInfo KnifeInfo;
+  public SpecialItemInfo ShotgunInfo;
   
   public int Seed;
 
-  public int ShotgunsCollected;
-  public int KnivesCollected;
-  
   public int CollectedNoExtra;
   public int CollectedTotal;
   public int BottomLine;
@@ -187,10 +179,10 @@ internal class Stats
   {
     MoonInfo = new(moonName, weather);
     BeeInfo = new();
-    BirdInfo = new();
+    EggInfo = new();
+    KnifeInfo = new();
+    ShotgunInfo = new();
     Seed = seed;
-    ShotgunsCollected = 0;
-    KnivesCollected = 0;
     CollectedNoExtra = 0;
     CollectedTotal = 0;
     BottomLine = 0;

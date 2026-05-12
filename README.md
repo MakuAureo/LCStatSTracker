@@ -13,144 +13,105 @@ Just HTTP request it and wait until the day is over to get your stats.
 # Currently Tracked Stats
 ```
 {
-    "MoonInfo":
-    {   
-        "Name":"220 Assurance",
-        "Weather":"Mild"
-    },
-    "DungeonInfo":
-    {
-        "ItemCount":20,
-        "Interior":"Mineshaft"
-    },
-    "HazardInfo":
-    {
-        "TurretCount":2,
-        "LandmineCount":1,
-        "SpiketrapCount":0
-    },
-    "BeeInfo":
-    {
-        "Values":
-        [
-            70,
-            101,
-            101
-        ]
-    },
-    "BirdInfo":
-    {
-        "EggValues":
-        [
-            71,
-            119,
-            94
-        ]
-    },
-    "Seed":29003587,
-    "ShotgunsCollected":1,
-    "KnivesCollected":0,
-    "CollectedNoExtra":291,
-    "CollectedTotal":806,
-    "BottomLine":760,
-    "BottomLineTrue":1428,
-    "ValueSold":0,
-    "NewQuota":0,
-    "AppSpawned":false,
-    "IndoorFog":false,
-    "TakeOffTime":"8:30 PM"
-    "SIDType":"",
-    "InfestationType":"",
-    "MeteorShowerTime":"",
-    "Players":
-    {
-        "76561198980273231":
-        {
-            "Name":"AureoHatsune",
-            "Alive":true,
-            "Disconnected":false,
-            "TimeOfDeath":"",
-            "CauseOfDeath":""
-        }
-    },
-    "IndoorSpawns":
-    [
-        {
-            "Enemy":"Bunker Spider",
-            "SpawnTime":"7:40 AM"
-        },
-        {
-            "Enemy":"Maneater",
-            "SpawnTime":"7:40 AM"
-        },
-        {
-            "Enemy":"Centipede",
-            "SpawnTime":"11:02 AM"
-        },
-        ...
+  "MoonInfo": {
+    "Name": "56 Vow",
+    "Weather": "Mild"
+  },
+  "DungeonInfo": {
+    "ItemCount": 19,
+    "Interior": "Mineshaft"
+  },
+  "HazardInfo": {
+    "TurretCount": 0,
+    "LandmineCount": 0,
+    "SpiketrapCount": 0
+  },
+  "BeeInfo": {
+    "Total": [
+      57
     ],
-    "DayTimeSpawns":
-    [
-        {
-            "Enemy":"Red Locust Bees",
-            "SpawnTime":"7:40 AM"
-        },
-        {
-            "Enemy":"GiantKiwi",
-            "SpawnTime":"7:40 AM"
-        },
-        {
-            "Enemy":"Red Locust Bees",
-            "SpawnTime":"7:40 AM"
-        },
-        {
-            "Enemy":"Red Locust Bees",
-            "SpawnTime":"7:40 AM"
-        }
-    ],
-    "NightTimeSpawns":
-    [
-        {
-            "Enemy":"Earth Leviathan",
-            "SpawnTime":"7:00 PM"},
-        {
-            "Enemy":"Earth Leviathan",
-            "SpawnTime":"7:00 PM"
-        },
-        {
-            "Enemy":"Baboon hawk",
-            "SpawnTime":"7:00 PM"
-        },
-        {
-            "Enemy":"Baboon hawk",
-            "SpawnTime":"7:00 PM"
-        }
+    "Collected": [
+      57
     ]
-    "MissedItems":
-    [
-        {
-            "Value":29,
-            "ItemType":"Stop sign",
-            "DespawnPosition":
-            [
-                -21.3,
-                -225.6,
-                51.0
-            ],
-            "CollectedOnPreviousDay":false
-        },
-        {
-            "Value":38,
-            "ItemType":"Large axle",
-            "DespawnPosition":
-            [
-                -20.3,
-                -218.9,
-                86.2
-            ],
-            "CollectedOnPreviousDay":false
-        },
-        ...
-    ],
+  },
+  "EggInfo": {
+    "Total": [],
+    "Collected": []
+  },
+  "KnifeInfo": {
+    "Total": [],
+    "Collected": []
+  },
+  "ShotgunInfo": {
+    "Total": [],
+    "Collected": []
+  },
+  "Seed": 60286767,
+  "CollectedNoExtra": 0,
+  "CollectedTotal": 57,
+  "BottomLine": 863,
+  "BottomLineTrue": 917,
+  "ValueSold": 0,
+  "NewQuota": 0,
+  "AppSpawned": false,
+  "IndoorFog": false,
+  "TakeOffTime": "9:00 AM",
+  "SIDType": "",
+  "InfestationType": "",
+  "MeteorShowerTime": "",
+  "Players": {
+    "76561198980273231": {
+      "Name": "AureoHatsune",
+      "Alive": true,
+      "Disconnected": false,
+      "TimeOfDeath": "",
+      "CauseOfDeath": ""
+    }
+  },
+  "IndoorSpawns": [],
+  "DayTimeSpawns": [
+    {
+      "Enemy": "Red Locust Bees",
+      "SpawnTime": "7:40 AM",
+      "TimeOfDeath": ""
+    },
+    {
+      "Enemy": "Manticoil",
+      "SpawnTime": "9:00 AM",
+      "TimeOfDeath": ""
+    },
+    ...
+  ],
+  "NightTimeSpawns": [],
+  "GiftBoxes": [
+    {
+      "GiftValue":21,
+      "ScrapValue":18,
+      "Collected":false
+    }
+  ],
+  "MissedItems": [
+    {
+      "Value": 60,
+      "ItemType": "Control pad",
+      "DespawnPosition": [
+        -18.2,
+        -212.6,
+        102.1
+      ],
+      "CollectedOnPreviousDay": false
+    },
+    {
+      "Value": 59,
+      "ItemType": "Brass bell",
+      "DespawnPosition": [
+        -57.5,
+        -219,
+        105.3
+      ],
+      "CollectedOnPreviousDay": false
+    },
+    ...
+  ]
 }
 ```
