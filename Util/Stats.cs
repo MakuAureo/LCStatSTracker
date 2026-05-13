@@ -150,6 +150,7 @@ internal class Stats
   public SpecialItemInfo ShotgunInfo;
   
   public int Seed;
+  public int Version;
 
   public int CollectedNoExtra;
   public int CollectedTotal;
@@ -175,7 +176,7 @@ internal class Stats
   public List<GiftBoxInfo> GiftBoxes;
   public List<MissingItemInfo> MissedItems;
 
-  public Stats(int seed, string moonName, string weather, GameNetcodeStuff.PlayerControllerB[] allPlayers)
+  public Stats(int seed, int version, string moonName, string weather, GameNetcodeStuff.PlayerControllerB[] allPlayers)
   {
     MoonInfo = new(moonName, weather);
     BeeInfo = new();
@@ -183,6 +184,7 @@ internal class Stats
     KnifeInfo = new();
     ShotgunInfo = new();
     Seed = seed;
+    Version = version;
     CollectedNoExtra = 0;
     CollectedTotal = 0;
     BottomLine = 0;

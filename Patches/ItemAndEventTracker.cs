@@ -49,7 +49,6 @@ internal class ItemAndEventTracker
 
     bool isVanillaInterior = StatsTracker.VanillaInteriorNames.TryGetValue(interiorNameIndirect, out string interiorName);
     StatsTracker.DayStats?.DungeonInfo = new(spawnedScrap.Length + appSpawnedThisDay.Count, isVanillaInterior ? interiorName : interiorNameIndirect);
-    StatsTracker.DayStats?.AppSpawned = appSpawnedThisDay.Count > 0;
 
     StatsTracker.DayStats?.BottomLine += totalStartScrapValue;
 
@@ -108,6 +107,7 @@ internal class ItemAndEventTracker
 
   public static void CountApp(LungProp __instance)
   {
+    StatsTracker.DayStats?.AppSpawned = true;
     appSpawnedThisDay.Add(__instance.NetworkObject); 
   }
 

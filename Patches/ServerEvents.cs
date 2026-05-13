@@ -13,7 +13,7 @@ internal class ServerEvents
     if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
 
-    StatsTracker.DayStats = new(__instance.randomMapSeed, __instance.currentLevel.PlanetName,
+    StatsTracker.DayStats = new(__instance.randomMapSeed, GameNetworkManager.Instance.gameVersionNum, __instance.currentLevel.PlanetName,
         __instance.currentLevel.currentWeather == LevelWeatherType.None ? "Mild" : __instance.currentLevel.currentWeather.ToString(),
         new ArraySegment<GameNetcodeStuff.PlayerControllerB>(__instance.allPlayerScripts, 0, __instance.connectedPlayersAmount + 1).ToArray());
 
