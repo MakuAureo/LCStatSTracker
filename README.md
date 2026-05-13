@@ -46,6 +46,7 @@ Just HTTP request it and wait until the day is over to get your stats.
     "Available": [],
     "Collected": []
   },
+  "Version": 81,
   "Seed": 10183014,
   "CollectedNoExtra": 926,
   "CollectedTotal": 1016,
