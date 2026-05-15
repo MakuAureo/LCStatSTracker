@@ -48,12 +48,13 @@ internal class GiftBoxInfo(int GiftValue, int ScrapValue)
   public bool Collected = false;
 }
 
-internal class MissingItemInfo(string Name, int Value, Vector3 DespawnPosition, bool CollectedOnPreviousDay)
+internal class MissingItemInfo(string Name, int Value, Vector3 DespawnPosition, bool CollectedOnPreviousDay, int? ScrapInsideGiftValue = null)
 {
   public int Value = Value;
   public string ItemType = Name;
   public double[] DespawnPosition = [Math.Round(DespawnPosition.x, 1), Math.Round(DespawnPosition.y, 1), Math.Round(DespawnPosition.z, 1)];
   public bool CollectedOnPreviousDay = CollectedOnPreviousDay;
+  public int? ScrapInsideGiftValue = ScrapInsideGiftValue;
 }
 
 internal class HazardInfo(int TurretCount, int LandmineCount, int SpiketrapCount)
@@ -100,6 +101,7 @@ internal class Stats
   public int CollectedTotal;
   public int BottomLine;
   public int BottomLineTrue;
+  public int ExtraFromOldGift;
 
   public int ValueSold;
   public int NewQuota;
@@ -117,7 +119,7 @@ internal class Stats
   public List<SpawnInfo> DayTimeSpawns;
   public List<SpawnInfo> NightTimeSpawns;
 
-  public List<GiftBoxInfo> GiftBoxes;
+  public List<GiftBoxInfo> GiftBoxesOpened;
   public List<MissingItemInfo> MissedItems;
 
   public Stats(int seed, int version, string moonName, string weather, GameNetcodeStuff.PlayerControllerB[] allPlayers)
@@ -133,6 +135,7 @@ internal class Stats
     CollectedTotal = 0;
     BottomLine = 0;
     BottomLineTrue = 0;
+    ExtraFromOldGift = 0;
     ValueSold = 0;
     NewQuota = 0;
     AppSpawned = false;
@@ -145,7 +148,7 @@ internal class Stats
     IndoorSpawns = [];
     DayTimeSpawns = [];
     NightTimeSpawns = [];
-    GiftBoxes = [];
+    GiftBoxesOpened = [];
     MissedItems = [];
 
     foreach (GameNetcodeStuff.PlayerControllerB player in allPlayers)

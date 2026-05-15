@@ -92,10 +92,7 @@ public class StatsTracker : BaseUnityPlugin
     Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackCollectedItems)));
   
     if (GiftBoxItemType != null)
-    {
-      Harmony.Patch(AccessTools.Method(typeof(GrabbableObject), nameof(GrabbableObject.Start)), postfix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackTrueValueFromGiftBox)));
       Harmony.Patch(AccessTools.Method(GiftBoxItemType, nameof(GiftBoxItem.OpenGiftBoxClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.AddNewlySpawnedGiftItemToItemTracker)));
-    }
 
     Harmony.Patch(AccessTools.Method(typeof(RedLocustBees), nameof(RedLocustBees.SpawnHiveClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackHive)));
 
