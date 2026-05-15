@@ -4,22 +4,13 @@ using UnityEngine;
 
 namespace StatsTracker.Util;
 
-internal class PlayerStats
+internal class PlayerStats(string name)
 {
-  public string Name;
-  public bool Alive;
-  public bool Disconnected;
-  public string TimeOfDeath;
-  public string CauseOfDeath;
-
-  public PlayerStats(string name)
-  {
-    Name = name;
-    Alive = true;
-    Disconnected = false;
-    TimeOfDeath = "";
-    CauseOfDeath = "";
-  }
+  public string Name = name;
+  public bool Alive = true;
+  public bool Disconnected = false;
+  public string TimeOfDeath = "";
+  public string CauseOfDeath = "";
 
   public void Kill(string TimeOfDeath, string CauseOfDeath)
   {
@@ -34,16 +25,10 @@ internal class PlayerStats
   }
 }
 
-internal class SpecialItemInfo
+internal class SpecialItemInfo()
 {
-  public List<int> Available;
-  public List<int> Collected;
-
-  public SpecialItemInfo()
-  {
-    this.Available = new();
-    this.Collected = new();
-  }
+  public List<int> Available = [];
+  public List<int> Collected = [];
 
   public void AddToAvailable(int value)
   {
@@ -56,86 +41,45 @@ internal class SpecialItemInfo
   }
 }
 
-internal class GiftBoxInfo
+internal class GiftBoxInfo(int GiftValue, int ScrapValue)
 {
-  public int GiftValue;
-  public int ScrapValue;
-  public bool Collected;
-
-  public GiftBoxInfo(int GiftValue, int ScrapValue)
-  {
-    this.GiftValue = GiftValue;
-    this.ScrapValue = ScrapValue;
-    this.Collected = false;
-  }
+  public int GiftValue = GiftValue;
+  public int ScrapValue = ScrapValue;
+  public bool Collected = false;
 }
 
-internal class MissingItemInfo
+internal class MissingItemInfo(string Name, int Value, Vector3 DespawnPosition, bool CollectedOnPreviousDay)
 {
-  public int Value;
-  public string ItemType;
-  public double[] DespawnPosition;
-  public bool CollectedOnPreviousDay;
-
-  public MissingItemInfo(string Name, int Value, Vector3 DespawnPosition, bool CollectedOnPreviousDay)
-  {
-    this.ItemType = Name;
-    this.Value = Value;
-    this.DespawnPosition = [ Math.Round(DespawnPosition.x, 1), Math.Round(DespawnPosition.y, 1), Math.Round(DespawnPosition.z, 1) ];
-    this.CollectedOnPreviousDay = CollectedOnPreviousDay;
-  }
+  public int Value = Value;
+  public string ItemType = Name;
+  public double[] DespawnPosition = [Math.Round(DespawnPosition.x, 1), Math.Round(DespawnPosition.y, 1), Math.Round(DespawnPosition.z, 1)];
+  public bool CollectedOnPreviousDay = CollectedOnPreviousDay;
 }
 
-internal class HazardInfo
+internal class HazardInfo(int TurretCount, int LandmineCount, int SpiketrapCount)
 {
-  public int TurretCount;
-  public int LandmineCount;
-  public int SpiketrapCount;
-
-  public HazardInfo(int TurretCount, int LandmineCount, int SpiketrapCount)
-  {
-    this.TurretCount = TurretCount;
-    this.LandmineCount = LandmineCount;
-    this.SpiketrapCount = SpiketrapCount;
-  }
+  public int TurretCount = TurretCount;
+  public int LandmineCount = LandmineCount;
+  public int SpiketrapCount = SpiketrapCount;
 }
 
-internal class MoonInfo
+internal class MoonInfo(string Name, string Weather)
 {
-  public string Name;
-  public string Weather;
-
-  public MoonInfo(string Name, string Weather) 
-  {
-    this.Name = Name;
-    this.Weather = Weather;
-  }
+  public string Name = Name;
+  public string Weather = Weather;
 }
 
-internal class DungeonInfo
+internal class DungeonInfo(int ItemCount, string Interior)
 {
-  public int ItemCount;
-  public string Interior;
-
-  public DungeonInfo(int ItemCount, string Interior)
-  {
-    this.ItemCount = ItemCount;
-    this.Interior = Interior;
-  }
+  public int ItemCount = ItemCount;
+  public string Interior = Interior;
 }
 
-internal class SpawnInfo
+internal class SpawnInfo(EnemyType EnemyType, string Time)
 {
-  public string Enemy;
-  public string SpawnTime;
-  public string TimeOfDeath;
-
-  public SpawnInfo(EnemyType EnemyType, string Time)
-  {
-    this.Enemy = EnemyType.enemyName;
-    this.SpawnTime = Time;
-    this.TimeOfDeath = "";
-  }
+  public string Enemy = EnemyType.enemyName;
+  public string SpawnTime = Time;
+  public string TimeOfDeath = "";
 }
 
 internal class Stats
@@ -148,7 +92,7 @@ internal class Stats
   public SpecialItemInfo EggInfo;
   public SpecialItemInfo KnifeInfo;
   public SpecialItemInfo ShotgunInfo;
-  
+
   public int Seed;
   public int Version;
 
@@ -159,14 +103,14 @@ internal class Stats
 
   public int ValueSold;
   public int NewQuota;
-  
+
   public bool AppSpawned;
   public bool IndoorFog;
   public string TakeOffTime;
   public string SIDType;
   public string InfestationType;
   public string MeteorShowerTime;
-  
+
   public Dictionary<ulong, PlayerStats> Players;
 
   public List<SpawnInfo> IndoorSpawns;
@@ -197,12 +141,12 @@ internal class Stats
     SIDType = "";
     InfestationType = "";
     MeteorShowerTime = "";
-    Players = new();
-    IndoorSpawns = new();
-    DayTimeSpawns = new();
-    NightTimeSpawns = new();
-    GiftBoxes = new();
-    MissedItems = new();
+    Players = [];
+    IndoorSpawns = [];
+    DayTimeSpawns = [];
+    NightTimeSpawns = [];
+    GiftBoxes = [];
+    MissedItems = [];
 
     foreach (GameNetcodeStuff.PlayerControllerB player in allPlayers)
       Players[player.playerSteamId] = new(player.playerUsername);
