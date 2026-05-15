@@ -41,10 +41,10 @@ internal class SpecialItemInfo()
   }
 }
 
-internal class GiftBoxInfo(int GiftValue, int ScrapValue)
+internal class GiftBoxInfo(int newScrapValue, int GiftScrapValue)
 {
-  public int GiftValue = GiftValue;
-  public int ScrapValue = ScrapValue;
+  public int NewScrapValue = newScrapValue;
+  public int GiftScrapValue = GiftScrapValue;
   public bool Collected = false;
 }
 
