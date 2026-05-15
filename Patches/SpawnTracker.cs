@@ -21,17 +21,17 @@ internal class SpawnTracker
     if (__instance.enemyType.isDaytimeEnemy)
     {
       EnemyToSpawnInfoIndex[__instance.NetworkObject] = StatsTracker.DayStats!.DayTimeSpawns.Count;
-      StatsTracker.DayStats?.DayTimeSpawns.Add(new(__instance.enemyType, StatsTracker.GetCurrentTimeString()));
+      StatsTracker.DayStats!.DayTimeSpawns.Add(new(__instance.enemyType, StatsTracker.GetCurrentTimeString()));
     }
     else if (__instance.enemyType.isOutsideEnemy)
     {
       EnemyToSpawnInfoIndex[__instance.NetworkObject] = StatsTracker.DayStats!.NightTimeSpawns.Count;
-      StatsTracker.DayStats?.NightTimeSpawns.Add(new(__instance.enemyType, StatsTracker.GetCurrentTimeString()));
+      StatsTracker.DayStats!.NightTimeSpawns.Add(new(__instance.enemyType, StatsTracker.GetCurrentTimeString()));
     }
     else
     {
       EnemyToSpawnInfoIndex[__instance.NetworkObject] = StatsTracker.DayStats!.IndoorSpawns.Count;
-      StatsTracker.DayStats?.IndoorSpawns.Add(new(__instance.enemyType, StatsTracker.GetCurrentTimeString()));
+      StatsTracker.DayStats!.IndoorSpawns.Add(new(__instance.enemyType, StatsTracker.GetCurrentTimeString()));
     }
   }
 
@@ -40,17 +40,17 @@ internal class SpawnTracker
     if (__instance.enemyType.isDaytimeEnemy)
     {
       EnemyToSpawnInfoIndex.TryGetValue(__instance.NetworkObject, out int index);
-      StatsTracker.DayStats?.DayTimeSpawns[index].TimeOfDeath = StatsTracker.GetCurrentTimeString();
+      StatsTracker.DayStats!.DayTimeSpawns[index].TimeOfDeath = StatsTracker.GetCurrentTimeString();
     }
     else if (__instance.enemyType.isOutsideEnemy)
     {
       EnemyToSpawnInfoIndex.TryGetValue(__instance.NetworkObject, out int index);
-      StatsTracker.DayStats?.NightTimeSpawns[index].TimeOfDeath = StatsTracker.GetCurrentTimeString();
+      StatsTracker.DayStats!.NightTimeSpawns[index].TimeOfDeath = StatsTracker.GetCurrentTimeString();
     }
     else
     {
       EnemyToSpawnInfoIndex.TryGetValue(__instance.NetworkObject, out int index);
-      StatsTracker.DayStats?.IndoorSpawns[index].TimeOfDeath = StatsTracker.GetCurrentTimeString();
+      StatsTracker.DayStats!.IndoorSpawns[index].TimeOfDeath = StatsTracker.GetCurrentTimeString();
     }
   }
 }

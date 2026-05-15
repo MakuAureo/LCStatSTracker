@@ -33,7 +33,7 @@ internal class ServerEvents
   private static IEnumerator PublishDayStatsAfterQuotaRoll(int prevQuota)
   {
     yield return new WaitUntil(() => TimeOfDay.Instance.profitQuota != prevQuota);
-    StatsTracker.DayStats?.NewQuota = TimeOfDay.Instance.profitQuota;
+    StatsTracker.DayStats!.NewQuota = TimeOfDay.Instance.profitQuota;
     StatsTracker.LocalServer.PublishStats(JsonConvert.SerializeObject(StatsTracker.DayStats));
   }
 }

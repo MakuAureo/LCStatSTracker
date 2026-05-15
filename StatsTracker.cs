@@ -142,11 +142,6 @@ public class StatsTracker : BaseUnityPlugin
     Logger.LogDebug("Finished unpatching!");
   }
 
-  private static HarmonyMethod PatchMethod(Type type, MethodInfo method)
-  {
-    return new HarmonyMethod(type, nameof(method));
-  }
-
   internal static string GetCurrentTimeString()
   {
     float timeNormalized = TimeOfDay.Instance.normalizedTimeOfDay;

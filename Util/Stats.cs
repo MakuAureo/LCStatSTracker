@@ -48,13 +48,13 @@ internal class GiftBoxInfo(int GiftValue, int ScrapValue)
   public bool Collected = false;
 }
 
-internal class MissingItemInfo(string Name, int Value, Vector3 DespawnPosition, bool CollectedOnPreviousDay, int? ScrapInsideGiftValue = null)
+internal class MissingItemInfo(string Name, int Value, Vector3 DespawnPosition, bool CollectedOnPreviousDay, int ScrapInsideGiftValue = 0)
 {
   public int Value = Value;
   public string ItemType = Name;
   public double[] DespawnPosition = [Math.Round(DespawnPosition.x, 1), Math.Round(DespawnPosition.y, 1), Math.Round(DespawnPosition.z, 1)];
   public bool CollectedOnPreviousDay = CollectedOnPreviousDay;
-  public int? ScrapInsideGiftValue = ScrapInsideGiftValue;
+  public int ScrapInsideGiftValue = ScrapInsideGiftValue;
 }
 
 internal class HazardInfo(int TurretCount, int LandmineCount, int SpiketrapCount)
