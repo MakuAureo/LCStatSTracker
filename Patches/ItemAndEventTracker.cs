@@ -129,29 +129,28 @@ internal class ItemAndEventTracker
     yield return new WaitUntil(() => instance.scrapValue != 0);
 
     StatsTracker.DayStats!.BottomLineTrue += instance.scrapValue;
+  }
 
-    if (StatsTracker.GiftBoxItemType?.IsInstanceOfType(instance) == true)
+  public static void PopulateObjectInGiftValueForAllClients(GiftBoxItem __instance)
+  {
+    System.Random randomSeed = new((int)__instance.targetFloorPosition.x + (int)__instance.targetFloorPosition.y);
+    System.Random random = new((int)__instance.targetFloorPosition.x + (int)__instance.targetFloorPosition.y);
+
+    List<int> list = new List<int>(RoundManager.Instance.currentLevel.spawnableScrap.Count);
+    for (int i = 0; i < RoundManager.Instance.currentLevel.spawnableScrap.Count; i++)
     {
-      System.Random randomSeed = new System.Random((int)instance.targetFloorPosition.x + (int)instance.targetFloorPosition.y);
-      System.Random random = new System.Random((int)instance.targetFloorPosition.x + (int)instance.targetFloorPosition.y);
-
-      List<int> list = new List<int>(RoundManager.Instance.currentLevel.spawnableScrap.Count);
-      for (int i = 0; i < RoundManager.Instance.currentLevel.spawnableScrap.Count; i++)
+      if (RoundManager.Instance.currentLevel.spawnableScrap[i].spawnableItem.itemId == 152767) // I think this is the itemId of the giftbox but idk it's just like this in the code
       {
-        if (RoundManager.Instance.currentLevel.spawnableScrap[i].spawnableItem.itemId == 152767) // I think this is the itemId of the giftbox but idk it's just like this in the code
-        {
-          list.Add(0);
-        }
-        else
-        {
-          list.Add(RoundManager.Instance.currentLevel.spawnableScrap[i].rarity);
-        }
+        list.Add(0);
       }
-      int randomWeightedIndexList = RoundManager.Instance.GetRandomWeightedIndexList(list, randomSeed);
-      Item itemInGift = RoundManager.Instance.currentLevel.spawnableScrap[randomWeightedIndexList].spawnableItem;
-      int itemInGiftValue = (int)((float)random.Next(itemInGift.minValue + 25, itemInGift.maxValue + 35) * RoundManager.Instance.scrapValueMultiplier);
-      Traverse.Create(instance).Field(nameof(GiftBoxItem.objectInPresentValue)).SetValue(itemInGiftValue);
+      else
+      {
+        list.Add(RoundManager.Instance.currentLevel.spawnableScrap[i].rarity);
+      }
     }
+    int randomWeightedIndexList = RoundManager.Instance.GetRandomWeightedIndexList(list, randomSeed);
+    Item itemInGift = RoundManager.Instance.currentLevel.spawnableScrap[randomWeightedIndexList].spawnableItem;
+    __instance.objectInPresentValue = (int)((float)random.Next(itemInGift.minValue + 25, itemInGift.maxValue + 35) * RoundManager.Instance.scrapValueMultiplier);
   }
 
   public static void TrackMissedItems(NetworkBehaviour __instance)
@@ -215,7 +214,6 @@ internal class ItemAndEventTracker
       return;
 
     int indexForNewlyOpenedGift = StatsTracker.DayStats!.GiftBoxesOpened.Count;
-    indexFromGiftBox[__instance.NetworkObject] = indexForNewlyOpenedGift;
     StatsTracker.DayStats!.GiftBoxesOpened.Add(new(__instance.objectInPresentValue, __instance.scrapValue));
     
     // Using StartOfRound to make sure the coroutine doesn't get interrupted early if the gift instance is destroyed somehow
@@ -226,22 +224,23 @@ internal class ItemAndEventTracker
   {
     NetworkObject netObject = null!;
     float startTime = Time.realtimeSinceStartup;
-    yield return new WaitUntil(() => Time.realtimeSinceStartup - startTime < 8f && !netObjRef.TryGet(out netObject));
+
+    yield return new WaitWhile(() => Time.realtimeSinceStartup - startTime < 8f && !netObjRef.TryGet(out netObject));
     if (netObject == null)
     {
       StatsTracker.Logger.LogWarning("No network object found for giftbox");
       yield break;
     }
 
-    indexFromGiftBox[netObjRef] = indexForCollectedGift;
+    indexFromGiftBox[netObject] = indexForCollectedGift;
     if (giftSpawnedThisDay)
     {
-      valueFromGiftSpawner[netObjRef] = originalGiftValue;
+      valueFromGiftSpawner[netObject] = originalGiftValue;
       StatsTracker.DayStats!.BottomLineTrue += newScrapValue - originalGiftValue;
     }
     else
     {
-      objectsExtraSpawnedThisDay.Remove(netObjRef);
+      objectsExtraSpawnedThisDay.Remove(netObject);
       StatsTracker.DayStats!.ExtraFromOldGift += newScrapValue - originalGiftValue;
     }
   }

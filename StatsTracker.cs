@@ -91,8 +91,15 @@ public class StatsTracker : BaseUnityPlugin
     Harmony.Patch(AccessTools.Method(typeof(NetworkBehaviour), nameof(NetworkBehaviour.OnNetworkDespawn)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackMissedItems)));
     Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackCollectedItems)));
   
-    if (GiftBoxItemType != null)
+    if (GiftBoxItemType != null) 
+    {
       Harmony.Patch(AccessTools.Method(GiftBoxItemType, nameof(GiftBoxItem.OpenGiftBoxClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.AddNewlySpawnedGiftItemToItemTracker)));
+      MethodInfo? GiftBoxItemInitializeAfterPositioning = AccessTools.Method(typeof(GiftBoxItem), nameof(GiftBoxItem.InitializeAfterPositioning));
+      if (GiftBoxItemInitializeAfterPositioning != null)
+        Harmony.Patch(GiftBoxItemInitializeAfterPositioning, postfix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.PopulateObjectInGiftValueForAllClients)));
+      else
+        Harmony.Patch(AccessTools.Method(GiftBoxItemType, nameof(GiftBoxItem.Start)), postfix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.PopulateObjectInGiftValueForAllClients)));
+    }
 
     Harmony.Patch(AccessTools.Method(typeof(RedLocustBees), nameof(RedLocustBees.SpawnHiveClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackHive)));
 
