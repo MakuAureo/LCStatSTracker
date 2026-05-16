@@ -113,6 +113,7 @@ public class StatsTracker : BaseUnityPlugin
 
     //Server
     Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.ResetPlayersLoadedValueClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ServerEvents), nameof(Patches.ServerEvents.StartTrackingNewday)));
+    Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.FinishGeneratingNewLevelClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ServerEvents), nameof(Patches.ServerEvents.TrackNewSeed)));
     Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.PassTimeToNextDay)), postfix: new HarmonyMethod(typeof(Patches.ServerEvents), nameof(Patches.ServerEvents.PublishDayStats)));
 
     //Ship

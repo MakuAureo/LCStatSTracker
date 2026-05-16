@@ -129,6 +129,29 @@ internal class ItemAndEventTracker
     yield return new WaitUntil(() => instance.scrapValue != 0);
 
     StatsTracker.DayStats!.BottomLineTrue += instance.scrapValue;
+
+    if (StatsTracker.GiftBoxItemType?.IsInstanceOfType(instance) == true)
+    {
+      System.Random randomSeed = new System.Random((int)instance.targetFloorPosition.x + (int)instance.targetFloorPosition.y);
+      System.Random random = new System.Random((int)instance.targetFloorPosition.x + (int)instance.targetFloorPosition.y);
+
+      List<int> list = new List<int>(RoundManager.Instance.currentLevel.spawnableScrap.Count);
+      for (int i = 0; i < RoundManager.Instance.currentLevel.spawnableScrap.Count; i++)
+      {
+        if (RoundManager.Instance.currentLevel.spawnableScrap[i].spawnableItem.itemId == 152767) // I think this is the itemId of the giftbox but idk it's just like this in the code
+        {
+          list.Add(0);
+        }
+        else
+        {
+          list.Add(RoundManager.Instance.currentLevel.spawnableScrap[i].rarity);
+        }
+      }
+      int randomWeightedIndexList = RoundManager.Instance.GetRandomWeightedIndexList(list, randomSeed);
+      Item itemInGift = RoundManager.Instance.currentLevel.spawnableScrap[randomWeightedIndexList].spawnableItem;
+      int itemInGiftValue = (int)((float)random.Next(itemInGift.minValue + 25, itemInGift.maxValue + 35) * RoundManager.Instance.scrapValueMultiplier);
+      Traverse.Create(instance).Field(nameof(GiftBoxItem.objectInPresentValue)).SetValue(itemInGiftValue);
+    }
   }
 
   public static void TrackMissedItems(NetworkBehaviour __instance)
@@ -137,7 +160,7 @@ internal class ItemAndEventTracker
       return;
 
     GrabbableObject gObject = (GrabbableObject)__instance;
-    if (!gObject.itemProperties.isScrap || gObject is RagdollGrabbableObject || (StatsTracker.DeactivatedField != null && (bool)StatsTracker.DeactivatedField.GetValue(gObject)))
+    if (!gObject.itemProperties.isScrap || gObject is RagdollGrabbableObject || (bool?)(StatsTracker.DeactivatedField?.GetValue(gObject)) == true)
       return;
 
     StatsTracker.DayStats!.MissedItems.Add(new(
@@ -157,7 +180,7 @@ internal class ItemAndEventTracker
     GrabbableObject[] allObjs = Object.FindObjectsByType<GrabbableObject>(FindObjectsSortMode.None);
     foreach (GrabbableObject gObj in allObjs)
     {
-      if (gObj.itemProperties.isScrap && !(StatsTracker.DeactivatedField != null && (bool)StatsTracker.DeactivatedField.GetValue(gObj)) && !gObj.itemUsedUp && gObj.isInShipRoom)
+      if (gObj.itemProperties.isScrap && !((bool?)(StatsTracker.DeactivatedField?.GetValue(gObj)) == true) && !gObj.itemUsedUp && gObj.isInShipRoom)
       {
         if (indexFromGiftBox.TryGetValue(gObj.NetworkObject, out int index))
           StatsTracker.DayStats!.GiftBoxesOpened[index].Collected = true;

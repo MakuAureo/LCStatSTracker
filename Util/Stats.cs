@@ -122,14 +122,14 @@ internal class Stats
   public List<GiftBoxInfo> GiftBoxesOpened;
   public List<MissingItemInfo> MissedItems;
 
-  public Stats(int seed, int version, string moonName, string weather, GameNetcodeStuff.PlayerControllerB[] allPlayers)
+  public Stats(int version, string moonName, string weather, GameNetcodeStuff.PlayerControllerB[] allPlayers)
   {
     MoonInfo = new(moonName, weather);
     BeeInfo = new();
     EggInfo = new();
     KnifeInfo = new();
     ShotgunInfo = new();
-    Seed = seed;
+    Seed = 0;
     Version = version;
     CollectedNoExtra = 0;
     CollectedTotal = 0;
