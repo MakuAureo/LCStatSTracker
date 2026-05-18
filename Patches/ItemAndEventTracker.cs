@@ -16,7 +16,7 @@ internal class ItemAndEventTracker
   private static readonly Dictionary<NetworkObjectReference, int> valueFromGiftSpawner = [];
   private static readonly Dictionary<NetworkObjectReference, int> indexFromGiftBox = [];
 
-  public static void ResetTrackerWhenStartingNewDay(RoundManager __instance)
+  public static void ResetItemAndEventTrackerWhenStartingNewDay(RoundManager __instance)
   {
     if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;

@@ -5,9 +5,9 @@ namespace StatsTracker.Patches;
 
 internal class SpawnTracker
 {
-  private static Dictionary<NetworkObjectReference, int> EnemyToSpawnInfoIndex = new();
+  private static readonly Dictionary<NetworkObjectReference, int> EnemyToSpawnInfoIndex = [];
 
-  public static void ResetTrackerWhenStartingNewDay(RoundManager __instance)
+  public static void ResetSpawnTrackerWhenStartingNewDay(RoundManager __instance)
   {
     if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
@@ -37,20 +37,22 @@ internal class SpawnTracker
 
   public static void TrackDeath(EnemyAI __instance)
   {
-    if (__instance.enemyType.isDaytimeEnemy)
-    {
-      EnemyToSpawnInfoIndex.TryGetValue(__instance.NetworkObject, out int index);
-      StatsTracker.DayStats!.DayTimeSpawns[index].TimeOfDeath = StatsTracker.GetCurrentTimeString();
-    }
-    else if (__instance.enemyType.isOutsideEnemy)
-    {
-      EnemyToSpawnInfoIndex.TryGetValue(__instance.NetworkObject, out int index);
-      StatsTracker.DayStats!.NightTimeSpawns[index].TimeOfDeath = StatsTracker.GetCurrentTimeString();
-    }
-    else
-    {
-      EnemyToSpawnInfoIndex.TryGetValue(__instance.NetworkObject, out int index);
-      StatsTracker.DayStats!.IndoorSpawns[index].TimeOfDeath = StatsTracker.GetCurrentTimeString();
+    EnemyToSpawnInfoIndex.TryGetValue(__instance.NetworkObject, out int index);
+    try {
+      if (__instance.enemyType.isDaytimeEnemy)
+      {
+        StatsTracker.DayStats!.DayTimeSpawns[index].TimeOfDeath = StatsTracker.GetCurrentTimeString();
+      }
+      else if (__instance.enemyType.isOutsideEnemy)
+      {
+        StatsTracker.DayStats!.NightTimeSpawns[index].TimeOfDeath = StatsTracker.GetCurrentTimeString();
+      }
+      else
+      {
+        StatsTracker.DayStats!.IndoorSpawns[index].TimeOfDeath = StatsTracker.GetCurrentTimeString();
+      }
+    } catch (System.Exception e) {
+      StatsTracker.Logger.LogError($"Error when registering enemy death: {e.Message}\n${e.StackTrace}");
     }
   }
 }
