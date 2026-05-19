@@ -1,29 +1,58 @@
 extern alias HQoL72;
 extern alias HQoL73;
 
+using HarmonyLib;
 using UnityEngine;
 
 namespace StatsTracker.Patches;
 
 internal class CompanyTracker
 {
-  public static void CalculateAmountSold(DepositItemsDesk __instance)
+  public static void ApplyCompanyTrackerPatches(Harmony Harmony)
   {
-    for (int i = 0; i < __instance.itemsOnCounter.Count; i++)
+    Harmony.Patch(AccessTools.Method(typeof(DepositItemsDesk), nameof(DepositItemsDesk.Update)), postfix: new HarmonyMethod(typeof(CompanyTracker), nameof(CheckForNewItemsOnCounter)));
+    Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.ShipHasLeft)), prefix: new HarmonyMethod(typeof(CompanyTracker), nameof(ResetItemCountAfterTakingOffCompanyTypeMoon)));
+  }
+
+  private static int itemsOnCounterCountLastFrame = 0;
+
+  private static void CheckForNewItemsOnCounter(DepositItemsDesk __instance)
+  {
+    if (__instance.itemsOnCounter.Count <= itemsOnCounterCountLastFrame)
+      goto UpdateItemsOnCounterCount;
+    
+    for (int i = itemsOnCounterCountLastFrame; i < __instance.itemsOnCounter.Count; i++)
     {
       if (!__instance.itemsOnCounter[i].itemProperties.isScrap)
         continue;
       else
         StatsTracker.DayStats!.ValueSold += __instance.itemsOnCounter[i].scrapValue;
     }
+
+    UpdateItemsOnCounterCount:
+    itemsOnCounterCountLastFrame = __instance.itemsOnCounter.Count;
+  }
+
+  private static void ResetItemCountAfterTakingOffCompanyTypeMoon(RoundManager __instance)
+  {
+    if (Object.FindAnyObjectByType<DepositItemsDesk>() == null)
+      return;
+
+    itemsOnCounterCountLastFrame = 0;
   }
 }
 
 internal class HQoLTracker
 {
+  public static void ApplyHQoLTrackerPatches(Harmony Harmony)
+  {
+    Harmony.Patch(AccessTools.Method(typeof(DepositItemsDesk), nameof(DepositItemsDesk.Start)), postfix: new HarmonyMethod(typeof(HQoLTracker), nameof(RegisterOnChangeWhenLandingOnCompanyTypeMoon)));
+    Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.ShipHasLeft)), prefix: new HarmonyMethod(typeof(HQoLTracker), nameof(DeregisterOnChangeAfterTakingOffCompanyTypeMoon)));
+  }
+
   private static int totalSold = 0;
 
-  public static void RegisterOnChangeWhenLandingOnCompanyTypeMoon(DepositItemsDesk __instance)
+  private static void RegisterOnChangeWhenLandingOnCompanyTypeMoon(DepositItemsDesk __instance)
   {
     if (HQoL72.HQoL.Network.HQoLNetwork.Instance != null)
     {
@@ -39,7 +68,7 @@ internal class HQoLTracker
     }
   }
 
-  public static void DeregisterOnChangeAfterTakingOffCompanyTypeMoon(RoundManager __instance)
+  private static void DeregisterOnChangeAfterTakingOffCompanyTypeMoon(RoundManager __instance)
   {
     if (Object.FindAnyObjectByType<DepositItemsDesk>() == null)
       return;
