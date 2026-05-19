@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using HarmonyLib;
 using Newtonsoft.Json;
 using Unity.Netcode;
 using UnityEngine;
@@ -8,7 +9,14 @@ namespace StatsTracker.Patches;
 
 internal class ServerEvents 
 {
-  public static void StartTrackingNewday(StartOfRound __instance)
+  public static void ApplyServerEventPatches(Harmony Harmony)
+  {
+    Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.ResetPlayersLoadedValueClientRpc)), prefix: new HarmonyMethod(typeof(ServerEvents), nameof(StartTrackingNewday)));
+    Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.FinishGeneratingNewLevelClientRpc)), prefix: new HarmonyMethod(typeof(ServerEvents), nameof(TrackNewSeed)));
+    Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.PassTimeToNextDay)), postfix: new HarmonyMethod(typeof(ServerEvents), nameof(PublishDayStats)));
+  }
+
+  private static void StartTrackingNewday(StartOfRound __instance)
   {
     if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
@@ -18,9 +26,11 @@ internal class ServerEvents
         new ArraySegment<GameNetcodeStuff.PlayerControllerB>(__instance.allPlayerScripts, 0, __instance.connectedPlayersAmount + 1).ToArray());
 
     StatsTracker.dayHasStarted = true;
+
+    TimeOfDay.Instance.normalizedTimeOfDay = 0;
   }
 
-  public static void TrackNewSeed(RoundManager __instance)
+  private static void TrackNewSeed(RoundManager __instance)
   {
     if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
@@ -28,7 +38,7 @@ internal class ServerEvents
     StatsTracker.DayStats!.Seed = StartOfRound.Instance.randomMapSeed;
   }
 
-  public static void PublishDayStats(StartOfRound __instance)
+  private static void PublishDayStats(StartOfRound __instance)
   {
     if (TimeOfDay.Instance.profitQuota - TimeOfDay.Instance.quotaFulfilled <= 0)
       __instance.StartCoroutine(PublishDayStatsAfterQuotaRoll(TimeOfDay.Instance.profitQuota));

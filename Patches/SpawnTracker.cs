@@ -1,13 +1,21 @@
 using System.Collections.Generic;
+using HarmonyLib;
 using Unity.Netcode;
 
 namespace StatsTracker.Patches;
 
 internal class SpawnTracker
 {
+  public static void ApplySpawnTrackerPatches(Harmony Harmony)
+  {
+    Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), prefix: new HarmonyMethod(typeof(SpawnTracker), nameof(ResetSpawnTrackerWhenStartingNewDay)));
+    Harmony.Patch(AccessTools.Method(typeof(EnemyAI), nameof(EnemyAI.Start)), postfix: new HarmonyMethod(typeof(SpawnTracker), nameof(TrackSpawn)));
+    Harmony.Patch(AccessTools.Method(typeof(EnemyAI), nameof(EnemyAI.KillEnemy)), prefix: new HarmonyMethod(typeof(SpawnTracker), nameof(TrackDeath)));
+  }
+
   private static readonly Dictionary<NetworkObjectReference, int> EnemyToSpawnInfoIndex = [];
 
-  public static void ResetSpawnTrackerWhenStartingNewDay(RoundManager __instance)
+  private static void ResetSpawnTrackerWhenStartingNewDay(RoundManager __instance)
   {
     if ((GameNetworkManager.Instance.gameVersionNum > 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Execute) || (GameNetworkManager.Instance.gameVersionNum <= 72 && __instance.__rpc_exec_stage != NetworkBehaviour.__RpcExecStage.Client))
       return;
@@ -16,7 +24,7 @@ internal class SpawnTracker
   }
    
   // CURRENT ISSUE: WILL NOT TRACK MODDED SPAWNS CORRECTLY (PROB NEED STARLANCER_AI_FIX DEPEDENCY)
-  public static void TrackSpawn(EnemyAI __instance)
+  private static void TrackSpawn(EnemyAI __instance)
   {
     if (__instance.enemyType.isDaytimeEnemy)
     {
@@ -35,7 +43,7 @@ internal class SpawnTracker
     }
   }
 
-  public static void TrackDeath(EnemyAI __instance)
+  private static void TrackDeath(EnemyAI __instance)
   {
     EnemyToSpawnInfoIndex.TryGetValue(__instance.NetworkObject, out int index);
     try {

@@ -4,9 +4,7 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
-using GameNetcodeStuff;
 using HarmonyLib;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace StatsTracker;
@@ -56,85 +54,16 @@ public class StatsTracker : BaseUnityPlugin
 
     Logger.LogDebug("Patching...");
 
-    //Company
-    Harmony.Patch(AccessTools.Method(typeof(DepositItemsDesk), nameof(DepositItemsDesk.SellItemsOnServer)), prefix: new HarmonyMethod(typeof(Patches.CompanyTracker), nameof(Patches.CompanyTracker.CalculateAmountSold)));
+    Patches.CompanyTracker.ApplyCompanyTrackerPatches(Harmony);
+    Patches.HazardTracker.ApplyHazardTrakcerPatches(Harmony);
+    Patches.ItemAndEventTracker.ApplyItemAndEventTrackerPatches(Harmony);
+    Patches.PlayerTracker.ApplyPlayerTrackerPatches(Harmony);
+    Patches.ServerEvents.ApplyServerEventPatches(Harmony);
+    Patches.ShipTracker.ApplyShipTrackerPatches(Harmony);
+    Patches.SpawnTracker.ApplySpawnTrackerPatches(Harmony);
 
-    //Hazard
-    Harmony.Patch(AccessTools.Method(typeof(Landmine), nameof(Landmine.Start)), postfix: new HarmonyMethod(typeof(Patches.HazardTracker), nameof(Patches.HazardTracker.CountLandmine)));
-    Harmony.Patch(AccessTools.Method(typeof(Turret), nameof(Turret.Start)), postfix: new HarmonyMethod(typeof(Patches.HazardTracker), nameof(Patches.HazardTracker.CountTurret)));
-    Type? SpikeRoofTrapType = AccessTools.TypeByName(nameof(SpikeRoofTrap));
-    if (SpikeRoofTrapType != null)
-      Harmony.Patch(AccessTools.Method(SpikeRoofTrapType, nameof(SpikeRoofTrap.Start)), postfix: new HarmonyMethod(typeof(Patches.HazardTracker), nameof(Patches.HazardTracker.CountSpiketrap)));
-
-    //ItemAndEvent
-    Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.ResetItemAndEventTrackerWhenStartingNewDay)));
-
-    MethodInfo RoundManagerSyncScrapValuesClientRpc = AccessTools.Method(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc));
-    Harmony.Patch(RoundManagerSyncScrapValuesClientRpc, prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackDungeonInfo)));
-    Harmony.Patch(RoundManagerSyncScrapValuesClientRpc, prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackSID)));
-
-    MethodInfo RoundManagerRefreshEnemiesList = AccessTools.Method(typeof(RoundManager), nameof(RoundManager.RefreshEnemiesList));
-    FieldInfo? enemyRushIndexField = AccessTools.Field(typeof(RoundManager), nameof(RoundManager.enemyRushIndex));
-    if (enemyRushIndexField != null)
-      Harmony.Patch(RoundManagerRefreshEnemiesList, postfix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackInfestation)));
-
-    FieldInfo? indoorFogInfo = AccessTools.Field(typeof(RoundManager), nameof(RoundManager.indoorFog));
-    if (indoorFogInfo != null)
-      Harmony.Patch(RoundManagerRefreshEnemiesList, postfix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackIndoorFog)));
-
-    MethodInfo? TimeOfDaySetBeginMeteorShowerClientRpcInfo = AccessTools.Method(typeof(TimeOfDay), nameof(TimeOfDay.SetBeginMeteorShowerClientRpc));
-    if (TimeOfDaySetBeginMeteorShowerClientRpcInfo != null)
-      Harmony.Patch(TimeOfDaySetBeginMeteorShowerClientRpcInfo, prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackMeteorShower)));
-
-    Harmony.Patch(AccessTools.Method(typeof(LungProp), nameof(LungProp.Start)), postfix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.CountApp)));
-    Harmony.Patch(AccessTools.Method(typeof(NetworkBehaviour), nameof(NetworkBehaviour.OnNetworkSpawn)), postfix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackSpawnedItems)));
-    Harmony.Patch(AccessTools.Method(typeof(NetworkBehaviour), nameof(NetworkBehaviour.OnNetworkDespawn)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackMissedItems)));
-    Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackCollectedItems)));
-  
-    if (GiftBoxItemType != null) 
-    {
-      Harmony.Patch(AccessTools.Method(GiftBoxItemType, nameof(GiftBoxItem.OpenGiftBoxClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.AddNewlySpawnedGiftItemToItemTracker)));
-
-      MethodInfo GiftBoxItemInternalValueSet = AccessTools.Method(GiftBoxItemType, nameof(GiftBoxItem.InitializeAfterPositioning)) ?? AccessTools.Method(GiftBoxItemType, nameof(GiftBoxItem.Start));
-      Harmony.Patch(GiftBoxItemInternalValueSet, postfix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.PopulateObjectInGiftValueForAllClients)));
-    }
-
-    Harmony.Patch(AccessTools.Method(typeof(RedLocustBees), nameof(RedLocustBees.SpawnHiveClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackHive)));
-
-    Type? ButlerEnemyAIType = AccessTools.TypeByName(nameof(ButlerEnemyAI));
-    if (ButlerEnemyAIType != null)
-    {
-      Harmony.Patch(AccessTools.Method(ButlerEnemyAIType, nameof(ButlerEnemyAI.Start)), postfix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackKnifeBeforePopping)));
-      Harmony.Patch(AccessTools.Method(ButlerEnemyAIType, nameof(ButlerEnemyAI.KillEnemy)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackButlerPopAndRemoveFakeValue)));
-    }
-
-    Type? GiantKiwiAIType = AccessTools.TypeByName(nameof(GiantKiwiAI));
-    if (GiantKiwiAIType != null)
-      Harmony.Patch(AccessTools.Method(GiantKiwiAIType, nameof(GiantKiwiAI.SpawnEggsClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ItemAndEventTracker), nameof(Patches.ItemAndEventTracker.TrackEggs)));
-
-    //Player
-    Harmony.Patch(AccessTools.Method(typeof(PlayerControllerB), nameof(PlayerControllerB.KillPlayerClientRpc)), prefix: new HarmonyMethod(typeof(Patches.PlayerTracker), nameof(Patches.PlayerTracker.TrackDeath)));
-    Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.OnPlayerDC)), prefix: new HarmonyMethod(typeof(Patches.PlayerTracker), nameof(Patches.PlayerTracker.TrackDisconnect)));
-
-    //Server
-    Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.ResetPlayersLoadedValueClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ServerEvents), nameof(Patches.ServerEvents.StartTrackingNewday)));
-    Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.FinishGeneratingNewLevelClientRpc)), prefix: new HarmonyMethod(typeof(Patches.ServerEvents), nameof(Patches.ServerEvents.TrackNewSeed)));
-    Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.PassTimeToNextDay)), postfix: new HarmonyMethod(typeof(Patches.ServerEvents), nameof(Patches.ServerEvents.PublishDayStats)));
-
-    //Ship
-    Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.ShipLeave)), postfix: new HarmonyMethod(typeof(Patches.ShipTracker), nameof(Patches.ShipTracker.RegisterTakeOffTime)));
-
-    //Spawn
-    Harmony.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.GenerateNewLevelClientRpc)), prefix: new HarmonyMethod(typeof(Patches.SpawnTracker), nameof(Patches.SpawnTracker.ResetSpawnTrackerWhenStartingNewDay)));
-    Harmony.Patch(AccessTools.Method(typeof(EnemyAI), nameof(EnemyAI.Start)), postfix: new HarmonyMethod(typeof(Patches.SpawnTracker), nameof(Patches.SpawnTracker.TrackSpawn)));
-    Harmony.Patch(AccessTools.Method(typeof(EnemyAI), nameof(EnemyAI.KillEnemy)), prefix: new HarmonyMethod(typeof(Patches.SpawnTracker), nameof(Patches.SpawnTracker.TrackDeath)));
-
-    //HQoL
     if (Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.72") || Chainloader.PluginInfos.ContainsKey("OreoM.HQoL.73"))
-    {
-      Harmony.Patch(AccessTools.Method(typeof(DepositItemsDesk), nameof(DepositItemsDesk.Start)), postfix: new HarmonyMethod(typeof(Patches.HQoLTracker), nameof(Patches.HQoLTracker.RegisterOnChangeWhenLandingOnCompanyTypeMoon)));
-      Harmony.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.ShipHasLeft)), prefix: new HarmonyMethod(typeof(Patches.HQoLTracker), nameof(Patches.HQoLTracker.DeregisterOnChangeAfterTakingOffCompanyTypeMoon)));
-    }
+      Patches.HQoLTracker.ApplyHQoLTrackerPatches(Harmony);
 
     Logger.LogDebug("Finished patching!");
   }
